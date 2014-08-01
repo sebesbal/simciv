@@ -36,7 +36,7 @@ struct Road
 };
 
 const int n = 10;
-const double trans_price = 5.0;
+const double trans_price = 1.0;
 const double scale = 30.0;
 
 class World
@@ -132,9 +132,9 @@ private:
 				}
 			}
 
-			a->price += 0.1 * (a->ideal_storage - a->storage);
+			
 
-			double p = 0;
+			double p = a->price - trans_price;
 			for (Road* r: a->road)
 			{
 				Area* b = r->other(a);
@@ -143,7 +143,11 @@ private:
 					p = b->price;
 				}
 			}
-			a->price = 0.5 * a->price + 0.5 * (p + trans_price);
+			a->price = p + trans_price;
+
+			double d = a->ideal_storage - a->storage;
+			a->price += 0.01 * pow(d, 2) * (d < 0 ? -1 : 1);
+			// a->price = 0.9 * a->price + 0.1 * (p + trans_price);
 		}
 
 		for (Road* r: road)
@@ -156,11 +160,11 @@ private:
 			double p_diff = b->price - a->price;
 			if (p_diff > trans_price)
 			{
-				r->transport += 0.01 * (p_diff - trans_price);
+				r->transport += (p_diff - trans_price);
 			}
 			else if (p_diff < -trans_price)
 			{
-				r->transport += 0.01 * (p_diff + trans_price);
+				r->transport += (p_diff + trans_price);
 			}
 			else
 			{
