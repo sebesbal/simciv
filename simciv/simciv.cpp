@@ -85,11 +85,11 @@ public:
 		a->p_sup = a->prod_p_sup = 10;
 		a->prod_v_sup = 100;
 
-		a = get_area(8, 5);
+		a = get_area(4, 5);
 		a->p_sup = a->prod_p_sup = 10;
 		a->prod_v_sup = 100;
 
-		a = get_area(8, 2);
+		a = get_area(4, 2);
 		a->p_dem = a->prod_p_dem = 100;
 		a->prod_v_dem = 100;
 	}
@@ -187,7 +187,7 @@ private:
 				}
 				else
 				{
-					r->t *= 0.8;
+					r->t *= 0.95;
 				}
 			}
 		}
@@ -241,6 +241,8 @@ private:
 			v_dem += a->prod_v_dem;
 			m_dem += a->prod_v_dem * a->prod_p_dem;
 
+
+			double beta = 0.1;
 			// modify sup price
 			if (v_sup == 0)
 			{
@@ -251,10 +253,10 @@ private:
 			}
 			else
 			{
-				a->p_sup = m_sup / v_sup;
+				a->p_sup = (1 - beta) * a->p_sup + beta * m_sup / v_sup;
 			}
 
-			a->v = v_dem + v_sup;
+			a->v = v_sup - v_dem;
 
 			// modify dem price
 			if (v_dem == 0)
@@ -263,10 +265,14 @@ private:
 				{
 					a->p_dem = max_p_dem;
 				}
+				else
+				{
+					a->p_dem *= (1 - beta);
+				}
 			}
 			else
 			{
-				a->p_dem = m_dem / v_dem;
+				a->p_dem = (1 - beta) * a->p_dem + beta * m_dem / v_dem;
 			}
 
 			// modify price
