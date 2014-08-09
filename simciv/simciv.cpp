@@ -12,32 +12,43 @@ class World;
 
 
 class Road;
+const double max_price = 100000000000;
 
 
 struct Area
 {
-	Area(): price(0), production(0), storage(0), ideal_storage(0) { }
-	double price;
-	double production;
+	Area(): p(-1), p_dem(0), p_sup(max_price), v_dem(0), v_sup(0), prod_p_dem(0), prod_v_dem(0), prod_p_sup(max_price), prod_v_sup(0), v(0) { }
+
+	double p;
+	double p_dem; // price demand
+	double p_sup; // supply
+
+	double v_dem; // volume
+	double v_sup;
+	double v;
+
+	double prod_p_dem; // production
+	double prod_v_dem;
+	double prod_p_sup;
+	double prod_v_sup;
+
 	int x;
 	int y;
 	vector<Road*> road;
-	double storage;
-	double ideal_storage;
 };
 
 struct Road
 {
-	Road(): transport(0) { }
+	Road(): t(0) { }
 	Area* a;
 	Area* b;
-	double transport;
+	double t; // transport
 	Area* other(Area* a) { return a == this->a ? b : this->a; }
 };
 
 const int n = 10;
 const double trans_price = 1.0;
-const double scale = 30.0;
+const double scale = 100.0;
 
 class World
 {
@@ -66,14 +77,21 @@ public:
 			}
 		}
 
-		Area* a = get_area(2, 2);
-		a->production = -1;
-		a->ideal_storage = 100;
-		a->storage = 100;
+		Area* a = get_area(2, 5);
+		a->p_dem = a->prod_p_dem = 100;
+		a->prod_v_dem = 100;
 
-		Area* b = get_area(8, 8);
-		b->production = 1;
-		b->ideal_storage = 0;
+		a = get_area(2, 8);
+		a->p_sup = a->prod_p_sup = 10;
+		a->prod_v_sup = 100;
+
+		a = get_area(8, 5);
+		a->p_sup = a->prod_p_sup = 10;
+		a->prod_v_sup = 100;
+
+		a = get_area(8, 2);
+		a->p_dem = a->prod_p_dem = 100;
+		a->prod_v_dem = 100;
 	}
 	~World()
 	{
@@ -93,6 +111,13 @@ public:
 			}
 			draw();
 		}
+
+		//for (int i = 0; i < 100; ++i)
+		//{
+		//	step = i;
+		//	draw();
+		//	iterate();
+		//}
 	}
 private:
 	int step;
@@ -115,76 +140,178 @@ private:
 		b->road.push_back(r);
 	}
 
+	void add_road2(Area* a, Area* b)
+	{
+		add_road(a, b);
+		add_road(b, a);
+	}
+
+	double price(double p_sup, double v_sup, double p_dem, double v_dem)
+	{
+		double v = v_sup + v_dem;
+		if (p_sup == max_price || p_dem == 0)
+		{
+			return -1;
+		}
+		else if (v == 0)
+		{
+			return (p_sup + p_dem) / 2;
+		}
+		else
+		{
+			double x = v_dem / v - 0.5;
+			double k = 6; // if the k is bigger, the sigmoid is "sharper"
+			double d = tanh(k * x);
+			double alpha = (d + 1) / 2;
+			return alpha * p_dem + (1 - alpha) * p_sup;
+		}
+	}
+
 	void iterate()
 	{
-		for (Area* a: area)
-		{
-			a->storage += a->production;
-			for (Road* r: a->road)
-			{
-				if (r->a == a)
-				{
-					a->storage -= r->transport;
-				}
-				else
-				{
-					a->storage += r->transport;
-				}
-			}
-
-			
-
-			double p = a->price - trans_price;
-			for (Road* r: a->road)
-			{
-				Area* b = r->other(a);
-				if (b->price < p)
-				{
-					p = b->price;
-				}
-			}
-			a->price = p + trans_price;
-
-			double d = a->ideal_storage - a->storage;
-			a->price += 0.01 * pow(d, 2) * (d < 0 ? -1 : 1);
-			// a->price = 0.9 * a->price + 0.1 * (p + trans_price);
-		}
-
+		// modify transport
 		for (Road* r: road)
 		{
 			Area* a = r->a;
 			Area* b = r->b;
-			a->storage -= r->transport;
-			b->storage += r->transport;
-
-			double p_diff = b->price - a->price;
-			if (p_diff > trans_price)
+			if (a->p > 0 && b->p > 0)
 			{
-				r->transport += (p_diff - trans_price);
+				double dp = b->p - a->p;
+				if (dp > trans_price)
+				{
+					r->t += 0.1 * (dp - trans_price);
+				}
+				else if (dp < -trans_price)
+				{
+					r->t += 0.1 * (dp + trans_price);
+				}
+				else
+				{
+					r->t *= 0.8;
+				}
 			}
-			else if (p_diff < -trans_price)
+		}
+		
+		for (Area* a: area)
+		{
+			double v_sup = 0;
+			double v_dem = 0;
+			double m_sup = 0; // money
+			double m_dem = 0;
+			double min_p_sup = a->prod_p_sup;
+			double max_p_dem = a->prod_p_dem;
+
+			for (Road* r: a->road)
 			{
-				r->transport += (p_diff + trans_price);
+				Area* b = r->other(a);
+				double t = r->t;
+				double dt = abs(t);
+
+				if (t == 0)
+				{
+					if (v_sup == 0)
+					{
+						min_p_sup = min(min_p_sup, b->p_sup + trans_price);
+					}
+					if (v_dem == 0)
+					{
+						if (b->p_dem > 0)
+						{
+							max_p_dem = max(max_p_dem, b->p_dem + trans_price);
+						}
+					}
+				}
+				else if (!(t > 0 ^ r->a == a))
+				{
+					// a --> b
+					v_dem += dt;
+					m_dem += dt * (b->p_dem + trans_price);
+				}
+				else
+				{
+					// b --> a
+					v_sup += dt;
+					m_sup += dt * (b->p_sup + trans_price);
+				}
+			}
+
+			v_sup += a->prod_v_sup;
+			m_sup += a->prod_v_sup * a->prod_p_sup;
+
+			v_dem += a->prod_v_dem;
+			m_dem += a->prod_v_dem * a->prod_p_dem;
+
+			// modify sup price
+			if (v_sup == 0)
+			{
+				if (min_p_sup != max_price)
+				{
+					a->p_sup = min_p_sup;
+				}
 			}
 			else
 			{
-				r->transport = 0;
+				a->p_sup = m_sup / v_sup;
 			}
+
+			a->v = v_dem + v_sup;
+
+			// modify dem price
+			if (v_dem == 0)
+			{
+				if (a->p_dem == 0)
+				{
+					a->p_dem = max_p_dem;
+				}
+			}
+			else
+			{
+				a->p_dem = m_dem / v_dem;
+			}
+
+			// modify price
+			double new_p = price(a->p_sup, v_sup, a->p_dem, v_dem);
+			double alpha = 0.1;
+			a->p = (1 - alpha) * a->p + alpha * new_p;
 		}
+	}
+
+	int price_to_color(double price)
+	{
+		// return hue2color(10 + 10 * price, 255);
+		return hue2color(0xFF, 10 + price);
 	}
 
 	gdebug_client GD;
 	void draw()
 	{
+		int c = 0xFF00FF;
+
+		GD.text(0, 0, -20, c, "0: Price");
+		GD.text(1, 0, -20, c, "1: Volume");
+		GD.text(2, 0, -20, c, "2: Price Supply");
+		GD.text(3, 0, -20, c, "3: Price Demand");
+
+		//GD.clearbg(0, 0);
 		for (Area* a: area)
 		{
-			GD.point(0, scale * a->x, scale * a->y, hue2color(0, 100 + a->storage), 3, step);
-			GD.point(1, scale * a->x, scale * a->y, hue2color(0, 100 + a->price), 3, step);
+			GD.point(0, scale * a->x, scale * a->y, price_to_color(a->p), 3, step);
+			GD.textnum(0, scale * a->x, scale * a->y + 5, c, a->p, step);
+
+			GD.point(1, scale * a->x, scale * a->y, price_to_color(a->v), 3, step);
+			GD.textnum(1, scale * a->x, scale * a->y + 5, c, a->v, step);
+
+			GD.point(2, scale * a->x, scale * a->y, price_to_color(a->p_sup), 3, step);
+			GD.textnum(2, scale * a->x, scale * a->y + 5, c, a->p_sup, step);
+
+			GD.point(3, scale * a->x, scale * a->y, price_to_color(a->p_dem), 3, step);
+			GD.textnum(3, scale * a->x, scale * a->y + 5, c, a->p_dem, step);
+
 			double vx = 0;
 			double vy = 0;
 			for (Road* r: a->road)
 			{
-				double t = r->transport;
+				double t = r->t;
 				if (!(t > 0 ^ r->a == a))
 				{
 					Area* b = r->other(a);
@@ -192,8 +319,8 @@ private:
 					vy += (b->y - a->y) * abs(t);
 				}
 			}
-			double s2 = 10.0;
-			GD.vector(2, scale * a->x, scale * a->y, s2 * vx, s2 * vy, 0xFF, 1, step);
+			double s2 = 1;
+			GD.vector(4, scale * a->x, scale * a->y, s2 * vx, s2 * vy, 0xFF, 1, step);
 		}
 		//for (Road* r: road)
 		//{
