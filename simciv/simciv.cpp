@@ -87,7 +87,7 @@ public:
 
 		a = get_area(4, 5);
 		a->p_sup = a->prod_p_sup = 10;
-		a->prod_v_sup = 100;
+		a->prod_v_sup = 120;
 
 		a = get_area(4, 2);
 		a->p_dem = a->prod_p_dem = 100;
@@ -256,7 +256,7 @@ private:
 				a->p_sup = (1 - beta) * a->p_sup + beta * m_sup / v_sup;
 			}
 
-			a->v = v_sup - v_dem;
+			a->v = v_sup + v_dem;
 
 			// modify dem price
 			if (v_dem == 0)
@@ -284,34 +284,48 @@ private:
 
 	int price_to_color(double price)
 	{
-		// return hue2color(10 + 10 * price, 255);
-		return hue2color(0xFF, 10 + price);
+		double min_price = 56;
+		double max_price = 60;
+		price = max(price, min_price);
+		price = min(price, max_price);
+		price -= min_price;
+		price = 1530 / 2 * price / (max_price - min_price);
+
+		return hue2color(price, 255);
+		//return hue2color(0xFF, 10 + price);
+	}
+
+	int volume_to_size(double volume)
+	{
+		return abs(volume) / 30;
 	}
 
 	gdebug_client GD;
 	void draw()
 	{
 		int c = 0xFF00FF;
+		int m = -40;
+		bool text = true;
 
-		GD.text(0, 0, -20, c, "0: Price");
-		GD.text(1, 0, -20, c, "1: Volume");
-		GD.text(2, 0, -20, c, "2: Price Supply");
-		GD.text(3, 0, -20, c, "3: Price Demand");
+		GD.text(0, 0, m, c, "0: Price");
+		GD.text(1, 0, m, c, "1: Volume");
+		GD.text(2, 0, m, c, "2: Price Supply");
+		GD.text(3, 0, m, c, "3: Price Demand");
 
 		//GD.clearbg(0, 0);
 		for (Area* a: area)
 		{
-			GD.point(0, scale * a->x, scale * a->y, price_to_color(a->p), 3, step);
-			GD.textnum(0, scale * a->x, scale * a->y + 5, c, a->p, step);
+			GD.point(0, scale * a->x, scale * a->y, price_to_color(a->p), volume_to_size(a->v), step);
+			if (text) GD.textnum(0, scale * a->x, scale * a->y + 5, c, a->p, step);
 
 			GD.point(1, scale * a->x, scale * a->y, price_to_color(a->v), 3, step);
-			GD.textnum(1, scale * a->x, scale * a->y + 5, c, a->v, step);
+			if (text) GD.textnum(1, scale * a->x, scale * a->y + 5, c, a->v, step);
 
 			GD.point(2, scale * a->x, scale * a->y, price_to_color(a->p_sup), 3, step);
-			GD.textnum(2, scale * a->x, scale * a->y + 5, c, a->p_sup, step);
+			if (text) GD.textnum(2, scale * a->x, scale * a->y + 5, c, a->p_sup, step);
 
 			GD.point(3, scale * a->x, scale * a->y, price_to_color(a->p_dem), 3, step);
-			GD.textnum(3, scale * a->x, scale * a->y + 5, c, a->p_dem, step);
+			if (text) GD.textnum(3, scale * a->x, scale * a->y + 5, c, a->p_dem, step);
 
 			double vx = 0;
 			double vy = 0;
@@ -325,7 +339,7 @@ private:
 					vy += (b->y - a->y) * abs(t);
 				}
 			}
-			double s2 = 1;
+			double s2 = 0.3;
 			GD.vector(4, scale * a->x, scale * a->y, s2 * vx, s2 * vy, 0xFF, 1, step);
 		}
 		//for (Road* r: road)
