@@ -34,7 +34,7 @@ struct Area
 
 	int x;
 	int y;
-	vector<Road*> road;
+	vector<Road*> _roads;
 };
 
 struct Road
@@ -64,7 +64,7 @@ public:
 				Area* a = new Area();
 				a->x = x;
 				a->y = y;
-				area.push_back(a);
+				_areas.push_back(a);
 
 				if (x > 0)
 				{
@@ -123,21 +123,21 @@ private:
 	int step;
 	Area* get_area(int x, int y)
 	{
-		return area[y * n + x];
+		return _areas[y * n + x];
 	}
 	//double price[n][n];
 	//double production[n][n];
-	vector<Road*> road;
-	vector<Area*> area;
+	vector<Road*> _roads;
+	vector<Area*> _areas;
 
 	void add_road(Area* a, Area* b)
 	{
 		Road* r = new Road();
 		r->a = a;
 		r->b = b;
-		road.push_back(r);
-		a->road.push_back(r);
-		b->road.push_back(r);
+		_roads.push_back(r);
+		a->_roads.push_back(r);
+		b->_roads.push_back(r);
 	}
 
 	void add_road2(Area* a, Area* b)
@@ -170,7 +170,7 @@ private:
 	void iterate()
 	{
 		// modify transport
-		for (Road* r: road)
+		for (Road* r: _roads)
 		{
 			Area* a = r->a;
 			Area* b = r->b;
@@ -192,7 +192,7 @@ private:
 			}
 		}
 		
-		for (Area* a: area)
+		for (Area* a: _areas)
 		{
 			double v_sup = 0;
 			double v_dem = 0;
@@ -201,7 +201,7 @@ private:
 			double min_p_sup = a->prod_p_sup;
 			double max_p_dem = a->prod_p_dem;
 
-			for (Road* r: a->road)
+			for (Road* r: a->_roads)
 			{
 				Area* b = r->other(a);
 				double t = r->t;
@@ -313,7 +313,7 @@ private:
 		GD.text(3, 0, m, c, "3: Price Demand");
 
 		//GD.clearbg(0, 0);
-		for (Area* a: area)
+		for (Area* a: _areas)
 		{
 			GD.point(0, scale * a->x, scale * a->y, price_to_color(a->p), volume_to_size(a->v), step);
 			if (text) GD.textnum(0, scale * a->x, scale * a->y + 5, c, a->p, step);
@@ -329,7 +329,7 @@ private:
 
 			double vx = 0;
 			double vy = 0;
-			for (Road* r: a->road)
+			for (Road* r: a->_roads)
 			{
 				double t = r->t;
 				if (!(t > 0 ^ r->a == a))
@@ -342,7 +342,7 @@ private:
 			double s2 = 0.3;
 			GD.vector(4, scale * a->x, scale * a->y, s2 * vx, s2 * vy, 0xFF, 1, step);
 		}
-		//for (Road* r: road)
+		//for (Road* r: _roads)
 		//{
 		//	Area* a = r->a;
 		//	Area* b = r->b;
@@ -361,7 +361,7 @@ private:
 	{
 		// GD.clearbg(0, 0x0);
 
-		for (Road* r: road)
+		for (Road* r: _roads)
 		{
 			Area* a = r->a;
 			Area* b = r->b;
