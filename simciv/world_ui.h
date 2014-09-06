@@ -41,8 +41,6 @@ protected:
 	WorldModel _model;
 	ItemType _mode;
 	CustomCommand _customCommand;
-	void set_factory_mode(Ref* sender);
-	void set_mine_mode(Ref* sender);
     void onDraw(const Mat4 &transform, uint32_t flags);
     Rect get_rect(int x, int y);
 };

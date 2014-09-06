@@ -6,6 +6,7 @@
 #include "ui\UIHBox.h"
 #include "ui\UIVBox.h"
 #include "ui\UIText.h"
+#include "ui\UIButton.h"
 
 namespace simciv
 {
@@ -59,32 +60,45 @@ void WorldUI::init_menu()
 	Vec2 topLeft = Vec2(visibleSize.width / 2.0f, visibleSize.height / 2.0f);
 
 	// right menu
-	double scale = 0.6;
-	double space = 7;
+	auto right_menu = VBox::create();
 
-	auto factory_button = MenuItemImage::create("factory1.png", "factory1.png", CC_CALLBACK_1(WorldUI::set_factory_mode, this) );
-	factory_button->setScale(0.4 * scale);
-	//factory_button->setPosition(Vec2(visibleSize) - factory_button->getScale() * Vec2(factory_button->getContentSize() / 2));
+	auto s = Size(20, 20);
+	LinearLayoutParameter* p = LinearLayoutParameter::create();
+	p->setGravity(LinearLayoutParameter::LinearGravity::CENTER_HORIZONTAL);
+	p->setMargin(Margin(2, 2, 2, 2));
 
-	auto mine_button = MenuItemImage::create("mine2.png", "mine2.png", CC_CALLBACK_1(WorldUI::set_mine_mode, this) );
-	mine_button->setScale(0.25 * scale);
-	auto b = factory_button->getBoundingBox();
-	//mine_button->setPosition(Vec2(b.getMaxX(), b.getMinY() - space) - mine_button->getScale() * Vec2(mine_button->getContentSize() / 2));
+	auto factory_button = Button::create("factory1.png", "factory1.png", "factory1.png");
+	factory_button->addTouchEventListener([this](Ref* w, Widget::TouchEventType e) {
+		_mode = IT_FACTORY;
+	});
+		
+	factory_button->ignoreContentAdaptWithSize(false);
+	factory_button->setSize(s);
+	factory_button->setLayoutParameter(p);
+	right_menu->addChild(factory_button);
 
-    // create menu, it's an autorelease object
-	auto menu = Menu::create(factory_button, mine_button, NULL);
-	menu->setPosition(0, h - 100);
-    this->addChild(menu, 1);
-	menu->alignItemsVertically();
+	auto mine_button = Button::create("mine2.png", "mine2.png", "mine2.png");
+	mine_button->addTouchEventListener([this](Ref* w, Widget::TouchEventType e) {
+		_mode = IT_MINE;
+	});
+	mine_button->setSize(s);
+	mine_button->setLayoutParameter(p);
+	mine_button->ignoreContentAdaptWithSize(false);
+	right_menu->addChild(mine_button);
+	this->addChild(right_menu);
+	right_menu->setAnchorPoint(Vec2(1, 1)); // doesn't have effect
+	right_menu->setPosition(Vec2(w - 13, h));
 
 
 	// left menu
+	auto left_menu = VBox::create();
 	auto cb_bck = labelled_cb("Background", [this](Ref* pSender,CheckBox::EventType type) {
 		_map->setVisible(type == CheckBox::EventType::SELECTED);
 	});
-	cb_bck->setPosition(Vec2(100, h - 100));
+	left_menu->addChild(cb_bck);
+	left_menu->setPosition(Vec2(0, h));
 
-	this->addChild(cb_bck);
+	this->addChild(left_menu);
 }
 
 // on "init" you need to initialize your instance
@@ -102,28 +116,11 @@ bool WorldUI::init()
 	_mode = IT_FACTORY;
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    auto origin = Director::getInstance()->getVisibleOrigin();
 
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    //auto label = LabelTTF::create("Hello World", "Arial", TITLE_FONT_SIZE);
-    //
-    //// position the label on the center of the screen
-    //label->setPosition(Vec2(origin.x + visibleSize.width/2,
-    //                        origin.y + visibleSize.height - label->getContentSize().height));
-
-    //// add the label as a child to this layer
-    //this->addChild(label, 1);
-
-	    // add "HelloWorld" splash screen"
     _map = Sprite::create("map.png");
 
     // position the sprite on the center of the screen
-    _map->setPosition(Vec2(visibleSize / 2) + origin);
+    _map->setPosition(Vec2(visibleSize / 2));
 	_map->setScale(1);
     // add the sprite as a child to this layer
     this->addChild(_map, 0, 0);
@@ -138,29 +135,10 @@ bool WorldUI::init()
 
 	//Node*
 	_items = Node::create(); 
-	_items->setPosition(Vec2(visibleSize / 2) + origin);
+	_items->setPosition(Vec2(visibleSize / 2));
 	
 	_map->addChild(_items, 0, 1);
 	_items->setLocalZOrder(1);
-
-	//auto factory1 = Sprite::create("factory1.png");
-	//factory1->setPosition(10, 10);
-	//factory1->setScale(0.2);
-	//_items->addChild(factory1);
-
-	//auto mine1 = Sprite::create("mine2.png");
-	//mine1->setPosition(100, 10);
-	//mine1->setScale(0.15);
-	//_items->addChild(mine1);
-
-	//auto coal1 = Sprite::create("mine2.png");
-	//coal1->setPosition(mine1->getPosition());
-	//coal1->setScale(0.05);
-	//_items->addChild(coal1);
-	//auto actionTo = MoveTo::create(1.5, factory1->getPosition());
-	//auto moveBack = MoveTo::create(0, mine1->getPosition());
-	//auto seq = Sequence::create(actionTo, moveBack, NULL);
-	//coal1->runAction(RepeatForever::create(seq));
     return true;
 }
 
@@ -237,16 +215,6 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 	}
 
 	return NULL;
-}
-
-void WorldUI::set_factory_mode(Ref* sender)
-{
-	_mode = IT_FACTORY;
-}
-
-void WorldUI::set_mine_mode(Ref* sender)
-{
-	_mode = IT_MINE;
 }
 
 void WorldUI::onEnter()
