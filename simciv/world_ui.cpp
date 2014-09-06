@@ -115,7 +115,7 @@ void WorldUI::init_menu()
 	cb_bck->setLayoutParameter(p);
 	left_menu->addChild(cb_bck);
 	
-	_show_grid = true;
+	_show_grid = false;
 	auto cb_grid = labelled_cb("Grid", _show_grid, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_grid = !_show_grid;
 	});

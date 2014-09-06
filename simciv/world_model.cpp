@@ -235,7 +235,7 @@ namespace simciv
 
 			// modify price
 			double new_p = price(a.p_sup, v_sup, a.p_dem, v_dem);
-			double alpha = 0.1;
+			double alpha = 0.02;
 			a.p = (1 - alpha) * a.p + alpha * new_p;
 		}
 	}
