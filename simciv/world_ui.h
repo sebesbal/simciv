@@ -34,7 +34,7 @@ public:
 
 	Item* add_item(ItemType type, int x, int y);
 protected:
-	static const int cs = 50; // cell size
+	static const int cs = 100; // cell size
 	cocos2d::Node* _items;
 	cocos2d::Node* _map;
 	WorldModel _model;
@@ -42,6 +42,8 @@ protected:
 	CustomCommand _customCommand;
     void onDraw(const Mat4 &transform, uint32_t flags);
     Rect get_rect(int x, int y);
+	Size _table;
+	bool _show_grid;
 };
 
 enum ItemType

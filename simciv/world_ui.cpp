@@ -112,7 +112,7 @@ void WorldUI::init_menu()
 	});
 	cb_bck->setLayoutParameter(p);
 	auto cb_grid = labelled_cb("Grid", [this](Ref* pSender,CheckBox::EventType type) {
-		_map->setVisible(type == CheckBox::EventType::SELECTED);
+		_show_grid = !_show_grid;
 	});
 	cb_grid->setLayoutParameter(p);
 
@@ -136,12 +136,14 @@ bool WorldUI::init()
 	init_menu();
 
 	// init model
-	_model.create_map(10, 10, 1);
+	
 	_mode = IT_FACTORY;
+	_show_grid = true;
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     _map = Sprite::create("map.png");
+	_table = _map->getContentSize();
 
     // position the sprite on the center of the screen
 	//_map->setAnchorPoint(Vec2(0, 0));
@@ -150,6 +152,8 @@ bool WorldUI::init()
     // add the sprite as a child to this layer
     this->addChild(_map, 0, 0);
 	_map->setLocalZOrder(-1);
+
+	_model.create_map(_table.width / cs, _table.height / cs, 1);
     
     //auto listener = EventListenerTouchAllAtOnce::create();
 	auto listener = EventListenerTouchOneByOne::create();
@@ -160,10 +164,13 @@ bool WorldUI::init()
 
 	//Node*
 	_items = Node::create(); 
-	_items->setPosition(Vec2(visibleSize / 2));
+	_items->setAnchorPoint(Vec2(0, 0));
+	_items->setPosition(Vec2(visibleSize / 2) - _table / 2);
+	//_items->setPosition(Vec2(0, 0));
 	
-	_map->addChild(_items, 0, 1);
+	this->addChild(_items, 0, 1);
 	_items->setLocalZOrder(1);
+	_items->setContentSize(_table);
     return true;
 }
 
@@ -191,12 +198,21 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
     //  glEnable(GL_LINE_SMOOTH);
     //DrawPrimitives::drawLine( VisibleRect::leftBottom(), VisibleRect::rightTop() );
 	auto b = _map->getBoundingBox();
-	// DrawPrimitives::drawLine( Vec2(b.getMinX(), b.getMinY()), Vec2(b.getMaxX(), b.getMaxY()));
+	//DrawPrimitives::drawLine( Vec2(b.getMinX(), b.getMinY()), Vec2(b.getMaxX(), b.getMaxY()));
+	//DrawPrimitives::drawLine( Vec2(b.getMinX(), b.getMaxY()), Vec2(b.getMaxX(), b.getMinY()));
 
-	float x = b.getMinX();
-	for (int i = 0; i <= _model.width(); ++i, x += cs)
+	if (_show_grid)
 	{
-		DrawPrimitives::drawLine( Vec2(x, b.getMinY()), Vec2(x, b.getMaxY()));
+		float x = b.getMinX();
+		for (int i = 0; i <= _model.width(); ++i, x += cs)
+		{
+			DrawPrimitives::drawLine( Vec2(x, b.getMinY()), Vec2(x, b.getMaxY()));
+		}
+		float y = b.getMinY();
+		for (int i = 0; i <= _model.height(); ++i, y += cs)
+		{
+			DrawPrimitives::drawLine( Vec2(b.getMinX(), y), Vec2(b.getMaxX(), y));
+		}
 	}
 }
 
@@ -208,9 +224,8 @@ Rect WorldUI::get_rect(int x, int y)
 
 Item* WorldUI::add_item(ItemType type, int x, int y)
 {
-	int cell_size = 50;
-	int ax = x / cell_size;
-	int ay = y / cell_size;
+	int ax = x / cs;
+	int ay = y / cs;
 	if (ax < 0 || ay < 0 || ax >= _model.width() || ay >= _model.height()) return NULL;
 
 	Area* a = _model.get_area(ax, ay);
@@ -245,11 +260,6 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 void WorldUI::onEnter()
 {
 	Layer::onEnter();
-	//auto visibleSize = Director::getInstance()->getVisibleSize();
-	//auto w = visibleSize.width;
-	//auto h = visibleSize.height;
-	//left_menu->setSize(left_menu->getContentSize());
-	//left_menu->setPosition(Vec2(0, h)); // - left_menu->getSize().height / 2));
 }
 
 void WorldUI::menuCloseCallback(Ref* sender)
@@ -269,13 +279,8 @@ void WorldUI::menuCloseCallback(Ref* sender)
 void WorldUI::onTouchMoved(Touch* touch, Event  *event)
 {
     auto diff = touch->getDelta();
-	auto diff2 = diff; //diff / 5;
-    auto back = _map; // getChildByTag(0);
-    auto currentPos = back->getPosition();
-    back->setPosition(currentPos + diff2);
-	//auto stars = getChildByTag(1);
-	//currentPos = stars->getPosition();
-	//stars->setPosition(currentPos + diff);
+	_map->setPosition(_map->getPosition() + diff);
+	_items->setPosition(_items->getPosition() + diff);
 }
 
 bool WorldUI::onTouchBegan(Touch* touch, Event  *event)
