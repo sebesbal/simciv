@@ -3,6 +3,9 @@
 #include "VisibleRect.h"
 #include "ui\UICheckBox.h"
 #include "ui\UILayout.h"
+#include "ui\UIHBox.h"
+#include "ui\UIVBox.h"
+#include "ui\UIText.h"
 
 namespace simciv
 {
@@ -29,22 +32,19 @@ using namespace ui;
 
 Layout* labelled_cb(std::string text, CheckBox::ccCheckBoxCallback cb)
 {
-	Layout* l = Layout::create();
-	l->setLayoutType(Layout::Type::HORIZONTAL);
-	l->setSize(Size(100, 100)); 
-
-	CheckBox* cb_bck = CheckBox::create("cocosui/check_box_normal.png",
+	auto l = HBox::create();
+	CheckBox* chb = CheckBox::create("cocosui/check_box_normal.png",
 										"cocosui/check_box_normal_press.png",
 										"cocosui/check_box_active.png",
 										"cocosui/check_box_normal_disable.png",
 										"cocosui/check_box_active_disable.png");
-	//cb_bck->setPosition(Vec2(0, 0));
-	//cb_bck->setScale(2.0);
-	//cb_bck->setOpacity(255);
-	cb_bck->setSelectedState(true);
-	cb_bck->addEventListener(cb);
-
-	l->addChild(cb_bck);
+	chb->setSelectedState(true);
+	chb->addEventListener(cb);
+	l->addChild(chb);
+	
+    auto label = Text::create();
+	label->setString(text);
+	l->addChild(label);
 
 	return l;
 }
@@ -57,9 +57,6 @@ void WorldUI::init_menu()
 	auto h = visibleSize.height;
 
 	Vec2 topLeft = Vec2(visibleSize.width / 2.0f, visibleSize.height / 2.0f);
-
-
-
 
 	// right menu
 	double scale = 0.6;
@@ -82,25 +79,10 @@ void WorldUI::init_menu()
 
 
 	// left menu
-
-	//CheckBox* cb_bck = CheckBox::create("cocosui/check_box_normal.png",
-	//									"cocosui/check_box_normal_press.png",
-	//									"cocosui/check_box_active.png",
-	//									"cocosui/check_box_normal_disable.png",
-	//									"cocosui/check_box_active_disable.png");
-	//cb_bck->setPosition(Vec2(100, visibleSize.height - 100));
-	//cb_bck->setScale(2.0);
-	//cb_bck->setOpacity(255);
-	//cb_bck->setSelectedState(true);
-	//cb_bck->addEventListener([this, cb_bck](Ref* pSender,CheckBox::EventType type) {
-	//	_map->setVisible(type == CheckBox::EventType::SELECTED);
-	//});
-
-	//auto lab_bck = Label::create("Background", "Arial", 12);
-
 	auto cb_bck = labelled_cb("Background", [this](Ref* pSender,CheckBox::EventType type) {
 		_map->setVisible(type == CheckBox::EventType::SELECTED);
 	});
+	cb_bck->setPosition(Vec2(100, h - 100));
 
 	this->addChild(cb_bck);
 }

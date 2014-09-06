@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 
-#include "HelloWorldScene.h"
 #include "world_ui.h"
 #include "AppMacros.h"
 
