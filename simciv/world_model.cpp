@@ -118,7 +118,7 @@ namespace simciv
 		{
 			return -1;
 		}
-		else if (v == 0)
+		else if (v < 0.5)
 		{
 			return (p_sup + p_dem) / 2;
 		}
@@ -164,7 +164,7 @@ namespace simciv
 						}
 						else
 						{
-							r->t[id] *= 0.5;
+							r->t[id] *= 0.8;
 						}
 					}
 				}
@@ -269,9 +269,9 @@ namespace simciv
 			if (new_p != -1)
 			{
 				// double alpha = 0.02;
-				double alpha = 0.1;
-				// a.p = (1 - alpha) * a.p + alpha * new_p;
-				a.p = (1 - alpha) * sum_p + alpha * new_p;
+				double alpha = 0.02;
+				a.p = (1 - alpha) * a.p + alpha * new_p;
+				// a.p = (1 - alpha) * sum_p + alpha * new_p;
 			}
 		}
 	}
