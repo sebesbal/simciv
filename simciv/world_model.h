@@ -36,10 +36,11 @@ namespace simciv
 
 	struct Road
 	{
-		Road(int pc);
+		Road(int pc, double t_price);
 		Area* a;
 		Area* b;
 		std::vector<double> t; // transport
+		double t_price;
 		Area* other(Area* a) { return a == this->a ? b : this->a; }
 	}; 
 

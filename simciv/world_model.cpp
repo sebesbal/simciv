@@ -3,7 +3,7 @@
 
 namespace simciv
 {
-	const double trans_price = 1.0;
+	//const double trans_price = 1.0;
 
 	Area::Area(int pc)
 	{
@@ -47,7 +47,7 @@ namespace simciv
 
 	}
 
-	Road::Road(int pc)
+	Road::Road(int pc, double t_price): t_price(t_price)
 	{
 		for (int i = 0; i < pc; ++i)
 		{
@@ -72,10 +72,18 @@ namespace simciv
 				if (x > 0)
 				{
 					add_road(a, get_area(x - 1, y));
+					if (y > 0)
+					{
+						add_road(a, get_area(x - 1, y - 1));
+					}
 				}
 				if (y > 0)
 				{
 					add_road(a, get_area(x, y - 1));
+					if (x < width - 1)
+					{
+						add_road(a, get_area(x + 1, y - 1));
+					}
 				}
 			}
 		}
@@ -83,7 +91,8 @@ namespace simciv
 
 	void WorldModel::add_road(Area* a, Area* b)
 	{
-		Road* r = new Road(_pc);
+		bool orto = a->x == b->x || a->y == b->y;
+		Road* r = new Road(_pc, orto ? 1.0 : 1.414);
 		r->a = a;
 		r->b = b;
 		_roads.push_back(r);
@@ -116,7 +125,8 @@ namespace simciv
 		else
 		{
 			double x = v_dem / v - 0.5;
-			double k = 6; // if the k is bigger, the sigmoid is "sharper"
+			// double k = 6; // if the k is bigger, the sigmoid is "sharper"
+			double k = 6;
 			double d = tanh(k * x);
 			double alpha = (d + 1) / 2;
 			return alpha * p_dem + (1 - alpha) * p_sup;
@@ -126,8 +136,11 @@ namespace simciv
 	void WorldModel::end_turn_prod(int id)
 	{
 		// modify transport
+		int n = 1;
+		for (int i = 0; i < n; ++i)
 		for (Road* r: _roads)
 		{
+			double trans_price = r->t_price;
 			AreaProd& a = r->a->_prod[id];
 			AreaProd& b = r->b->_prod[id];
 			if (a.p > 0 && b.p > 0)
@@ -143,11 +156,21 @@ namespace simciv
 				}
 				else
 				{
-					r->t[id] *= 0.95;
+					if (i == n - 1)
+					{
+						if (r->t[id] > 10)
+						{
+							r->t[id] *= 0.99;
+						}
+						else
+						{
+							r->t[id] *= 0.5;
+						}
+					}
 				}
 			}
 		}
-		
+
 		for (Area* area: _areas)
 		{
 			AreaProd& a = area->_prod[id];
@@ -157,11 +180,15 @@ namespace simciv
 			double m_dem = 0;
 			double min_p_sup = a.prod_p_sup;
 			double max_p_dem = a.prod_p_dem;
+			double sum_p = 0;
 
 			for (Road* r: area->_roads)
 			{
+				double trans_price = r->t_price;
 				Area* area_b = r->other(area);
 				AreaProd& b = area_b->_prod[id];
+				sum_p += b.p;
+
 				double t = r->t[id];
 				double dt = abs(t);
 
@@ -193,14 +220,15 @@ namespace simciv
 				}
 			}
 
+			sum_p = 0.5 * sum_p / 9 + 0.5 * a.p;
+
 			v_sup += a.prod_v_sup;
 			m_sup += a.prod_v_sup * a.prod_p_sup;
 
 			v_dem += a.prod_v_dem;
 			m_dem += a.prod_v_dem * a.prod_p_dem;
 
-
-			double beta = 0.1;
+			double beta = 0.05;
 			// modify sup price
 			if (v_sup == 0)
 			{
@@ -215,12 +243,15 @@ namespace simciv
 			}
 
 			a.v = v_sup + v_dem;
+			a.v_sup = v_sup;
+			a.v_dem = v_dem;
 
 			// modify dem price
 			if (v_dem == 0)
 			{
 				if (a.p_dem == 0)
 				{
+					// a.p_dem = max_p_dem;
 					a.p_dem = max_p_dem;
 				}
 				else
@@ -235,8 +266,13 @@ namespace simciv
 
 			// modify price
 			double new_p = price(a.p_sup, v_sup, a.p_dem, v_dem);
-			double alpha = 0.02;
-			a.p = (1 - alpha) * a.p + alpha * new_p;
+			if (new_p != -1)
+			{
+				// double alpha = 0.02;
+				double alpha = 0.1;
+				// a.p = (1 - alpha) * a.p + alpha * new_p;
+				a.p = (1 - alpha) * sum_p + alpha * new_p;
+			}
 		}
 	}
 

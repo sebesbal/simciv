@@ -122,13 +122,20 @@ void WorldUI::init_menu()
 	cb_grid->setLayoutParameter(p);
 	left_menu->addChild(cb_grid);
 
-	_show_price = true;
+	_show_price = false;
 	auto cb_price = labelled_cb("Price", _show_price, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_price = !_show_price;
 	});
 	cb_price->setLayoutParameter(p);
 	left_menu->addChild(cb_price);
 	
+	_show_supply_volume = true;
+	auto cb_supply = labelled_cb("Supply", _show_supply_volume, [this](Ref* pSender,CheckBox::EventType type) {
+		_show_supply_volume = !_show_supply_volume;
+	});
+	cb_supply->setLayoutParameter(p);
+	left_menu->addChild(cb_supply);
+
 	_show_transport = true;
 	auto cb_transport = labelled_cb("Transp.", _show_transport, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_transport = !_show_transport;
@@ -192,7 +199,7 @@ bool WorldUI::init()
 	
 	//auto cb = [](float f) {};
 	// _draw_tiles.schedule(schedule_selector(WorldUI::tick), this, 0.1, kRepeatForever, 0, false);
-	this->schedule(schedule_selector(WorldUI::tick), 0.1, kRepeatForever, 0);
+	this->schedule(schedule_selector(WorldUI::tick), 0.05, kRepeatForever, 0);
 
 	add_item(IT_FACTORY, _table.width / 3, _table.height / 2);
 	add_item(IT_MINE, 2 * _table.width / 3, _table.height / 2);
@@ -260,6 +267,24 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		for (Area* a: _model.areas())
 		{
 			double v = a->_prod[0].p;
+			double r = d == 0 ? 0.5 : (v - min_v) / d;
+			draw_rect(a->x, a->y, r);
+		}
+	}
+
+	if (_show_supply_volume)
+	{
+		for (Area* a: _model.areas())
+		{
+			double v = a->_prod[0].v_sup;
+			min_v = std::min(min_v, v);
+			max_v = std::max(max_v, v);
+		}
+		double d = max_v - min_v;
+
+		for (Area* a: _model.areas())
+		{
+			double v = a->_prod[0].v_sup;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
 			draw_rect(a->x, a->y, r);
 		}
