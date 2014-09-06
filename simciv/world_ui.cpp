@@ -7,6 +7,7 @@
 #include "ui\UIVBox.h"
 #include "ui\UIText.h"
 #include "ui\UIButton.h"
+#include "base\ccTypes.h"
 #include <algorithm>
 
 namespace simciv
@@ -116,8 +117,14 @@ void WorldUI::init_menu()
 	});
 	cb_grid->setLayoutParameter(p);
 
+	auto cb_price = labelled_cb("Price", [this](Ref* pSender,CheckBox::EventType type) {
+		_show_price = !_show_price;
+	});
+	cb_price->setLayoutParameter(p);
+
 	left_menu->addChild(cb_bck);
 	left_menu->addChild(cb_grid);
+	left_menu->addChild(cb_price);
 
 	left_menu->setAnchorPoint(Vec2(0, 1));
 	left_menu->setPosition(Vec2(0, h));
@@ -139,10 +146,12 @@ bool WorldUI::init()
 	
 	_mode = IT_FACTORY;
 	_show_grid = true;
+	_show_price = true;
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     _map = Sprite::create("map.png");
+
 	_table = _map->getContentSize();
 
     // position the sprite on the center of the screen
@@ -171,6 +180,15 @@ bool WorldUI::init()
 	this->addChild(_items, 0, 1);
 	_items->setLocalZOrder(1);
 	_items->setContentSize(_table);
+
+	
+	//auto cb = [](float f) {};
+	// _draw_tiles.schedule(schedule_selector(WorldUI::tick), this, 0.1, kRepeatForever, 0, false);
+	this->schedule(schedule_selector(WorldUI::tick), 0.1, kRepeatForever, 0);
+
+	add_item(IT_FACTORY, _table.width / 3, _table.height / 2);
+	add_item(IT_MINE, 2 * _table.width / 3, _table.height / 2);
+
     return true;
 }
 
@@ -180,7 +198,7 @@ void WorldUI::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
     _customCommand.func = CC_CALLBACK_0(WorldUI::onDraw, this, transform, flags);
     renderer->addCommand(&_customCommand);
 }
-
+int lofusz = 0;
 void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 {
     Director* director = Director::getInstance();
@@ -214,12 +232,49 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			DrawPrimitives::drawLine( Vec2(b.getMinX(), y), Vec2(b.getMaxX(), y));
 		}
 	}
+
+	// draw_rect(5, 5, 1);
+
+	double min_v = 1000;
+	double max_v = 0;
+
+	if (_show_price)
+	{
+		for (Area* a: _model.areas())
+		{
+			double v = a->_prod[0].p;
+			min_v = std::min(min_v, v);
+			max_v = std::max(max_v, v);
+		}
+		double d = max_v - min_v;
+
+		for (Area* a: _model.areas())
+		{
+			double v = a->_prod[0].p;
+			double r = d == 0 ? 0.5 : (v - min_v) / d;
+			draw_rect(a->x, a->y, r);
+		}
+	}
+}
+
+void WorldUI::draw_rect(int x, int y, double rate)
+{
+	Rect r = get_rect(x, y);
+	
+	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, 0.5));
 }
 
 Rect WorldUI::get_rect(int x, int y)
 {
 	auto b = _map->getBoundingBox();
-	return Rect(cs * x, cs * y, cs, cs);
+	return Rect(b.getMinX() + cs * x, b.getMinY() + cs * y, cs, cs);
+}
+
+
+void WorldUI::tick(float f)
+{
+	// ++lofusz;
+	_model.end_turn();
 }
 
 Item* WorldUI::add_item(ItemType type, int x, int y)
@@ -238,7 +293,7 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 			mine1->setPosition(x, y);
 			mine1->setScale(0.15);
 			_items->addChild(mine1);
-			_model.add_supply(a, 0, 50, 10);
+			_model.add_supply(a, 0, 100, 10);
 		}
 		break;
 	case simciv::IT_FACTORY:
@@ -247,7 +302,7 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 			factory1->setPosition(x, y);
 			factory1->setScale(0.2);
 			_items->addChild(factory1);
-			_model.add_supply(a, 0, -50, 100);
+			_model.add_supply(a, 0, -100, 100);
 		}
 		break;
 	default:

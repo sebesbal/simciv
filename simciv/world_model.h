@@ -50,6 +50,7 @@ namespace simciv
 		const std::vector<Road*>& roads() { return _roads; }
 		const std::vector<Area*>& areas() { return _areas; }
 		void end_turn();
+		void end_turn_prod(int id);
 		void add_supply(Area* area, int prod_id, double volume, double price);
 		Area* get_area(int x, int y);
 		int width() { return _width; }

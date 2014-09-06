@@ -3,6 +3,8 @@
 
 namespace simciv
 {
+	const double trans_price = 1.0;
+
 	Area::Area(int pc)
 	{
 		for (int i = 0; i < pc; ++i)
@@ -69,10 +71,154 @@ namespace simciv
 		a->_roads.push_back(r);
 		b->_roads.push_back(r);
 	}
-
+	
 	void WorldModel::end_turn()
 	{
+		for (int k = 0; k < 10; ++k)
+		{
+			for (int i = 0; i < _pc; ++i)
+			{
+				end_turn_prod(i);
+			}
+		}
+	}
+	
+	double price(double p_sup, double v_sup, double p_dem, double v_dem)
+	{
+		double v = v_sup + v_dem;
+		if (p_sup == max_price || p_dem == 0)
+		{
+			return -1;
+		}
+		else if (v == 0)
+		{
+			return (p_sup + p_dem) / 2;
+		}
+		else
+		{
+			double x = v_dem / v - 0.5;
+			double k = 6; // if the k is bigger, the sigmoid is "sharper"
+			double d = tanh(k * x);
+			double alpha = (d + 1) / 2;
+			return alpha * p_dem + (1 - alpha) * p_sup;
+		}
+	}
 
+	void WorldModel::end_turn_prod(int id)
+	{
+		// modify transport
+		for (Road* r: _roads)
+		{
+			AreaProd& a = r->a->_prod[id];
+			AreaProd& b = r->b->_prod[id];
+			if (a.p > 0 && b.p > 0)
+			{
+				double dp = b.p - a.p;
+				if (dp > trans_price)
+				{
+					r->t[id] += 0.1 * (dp - trans_price);
+				}
+				else if (dp < -trans_price)
+				{
+					r->t[id] += 0.1 * (dp + trans_price);
+				}
+				else
+				{
+					r->t[id] *= 0.95;
+				}
+			}
+		}
+		
+		for (Area* area: _areas)
+		{
+			AreaProd& a = area->_prod[id];
+			double v_sup = 0;
+			double v_dem = 0;
+			double m_sup = 0; // money
+			double m_dem = 0;
+			double min_p_sup = a.prod_p_sup;
+			double max_p_dem = a.prod_p_dem;
+
+			for (Road* r: area->_roads)
+			{
+				Area* area_b = r->other(area);
+				AreaProd& b = area_b->_prod[id];
+				double t = r->t[id];
+				double dt = abs(t);
+
+				if (t == 0)
+				{
+					if (v_sup == 0)
+					{
+						min_p_sup = std::min(min_p_sup, b.p_sup + trans_price);
+					}
+					if (v_dem == 0)
+					{
+						if (b.p_dem > 0)
+						{
+							max_p_dem = std::max(max_p_dem, b.p_dem + trans_price);
+						}
+					}
+				}
+				else if (!(t > 0 ^ r->a == area))
+				{
+					// a --> b
+					v_dem += dt;
+					m_dem += dt * (b.p_dem + trans_price);
+				}
+				else
+				{
+					// b --> a
+					v_sup += dt;
+					m_sup += dt * (b.p_sup + trans_price);
+				}
+			}
+
+			v_sup += a.prod_v_sup;
+			m_sup += a.prod_v_sup * a.prod_p_sup;
+
+			v_dem += a.prod_v_dem;
+			m_dem += a.prod_v_dem * a.prod_p_dem;
+
+
+			double beta = 0.1;
+			// modify sup price
+			if (v_sup == 0)
+			{
+				if (min_p_sup != max_price)
+				{
+					a.p_sup = min_p_sup;
+				}
+			}
+			else
+			{
+				a.p_sup = (1 - beta) * a.p_sup + beta * m_sup / v_sup;
+			}
+
+			a.v = v_sup + v_dem;
+
+			// modify dem price
+			if (v_dem == 0)
+			{
+				if (a.p_dem == 0)
+				{
+					a.p_dem = max_p_dem;
+				}
+				else
+				{
+					a.p_dem *= (1 - beta);
+				}
+			}
+			else
+			{
+				a.p_dem = (1 - beta) * a.p_dem + beta * m_dem / v_dem;
+			}
+
+			// modify price
+			double new_p = price(a.p_sup, v_sup, a.p_dem, v_dem);
+			double alpha = 0.1;
+			a.p = (1 - alpha) * a.p + alpha * new_p;
+		}
 	}
 
 	void WorldModel::add_supply(Area* area, int prod_id, double volume, double price)
@@ -81,12 +227,14 @@ namespace simciv
 		if (volume < 0)
 		{
 			volume = -volume;
-			a.prod_p_dem = (a.prod_p_dem * a.prod_v_dem + volume * price) / (a.prod_p_dem + volume);
+			//a.p_dem =	a.prod_p_dem = (a.prod_p_dem * a.prod_v_dem + volume * price) / (a.prod_p_dem + volume);
+			a.p_dem =	a.prod_p_dem = price;
 			a.prod_v_dem += volume;
 		}
 		else
 		{
-			a.prod_p_sup = (a.prod_p_sup * a.prod_v_sup + volume * price) / (a.prod_p_sup + volume);
+			// a.p_sup = a.prod_p_sup = (a.prod_p_sup * a.prod_v_sup + volume * price) / (a.prod_p_sup + volume);
+			a.p_sup = a.prod_p_sup = price;
 			a.prod_v_sup += volume;
 		}
 		

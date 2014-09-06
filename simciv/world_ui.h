@@ -41,9 +41,13 @@ protected:
 	ItemType _mode;
 	CustomCommand _customCommand;
     void onDraw(const Mat4 &transform, uint32_t flags);
+	void draw_rect(int x, int y, double rate);
     Rect get_rect(int x, int y);
+	void tick(float f);
 	Size _table;
 	bool _show_grid;
+	bool _show_price;
+	Scheduler _draw_tiles;
 };
 
 enum ItemType
