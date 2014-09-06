@@ -3,7 +3,6 @@
 #include "cocos2d.h"
 #include "world_model.h"
 
-
 namespace simciv
 {
 

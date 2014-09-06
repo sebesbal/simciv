@@ -22,7 +22,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
     if(!glview) {
-        glview = GLView::create("Cpp Empty Test");
+        // glview = GLView::create("Cpp Empty Test");
+		glview = GLView::createWithRect("Cpp Empty Test", Rect(0, 0, 1024, 768));
         director->setOpenGLView(glview);
     }
 
@@ -35,7 +36,6 @@ bool AppDelegate::applicationDidFinishLaunching() {
 #else
     glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
 #endif
-
 	Size frameSize = glview->getFrameSize();
     
     vector<string> searchPath;
@@ -71,7 +71,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     FileUtils::getInstance()->setSearchPaths(searchPath);
 	
     // turn on display FPS
-    director->setDisplayStats(true);
+    director->setDisplayStats(false);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);

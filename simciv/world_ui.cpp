@@ -7,6 +7,7 @@
 #include "ui\UIVBox.h"
 #include "ui\UIText.h"
 #include "ui\UIButton.h"
+#include <algorithm>
 
 namespace simciv
 {
@@ -34,6 +35,9 @@ using namespace ui;
 Layout* labelled_cb(std::string text, CheckBox::ccCheckBoxCallback cb)
 {
 	auto l = HBox::create();
+	auto p = LinearLayoutParameter::create();
+	p->setGravity(LinearLayoutParameter::LinearGravity::CENTER_VERTICAL);
+
 	CheckBox* chb = CheckBox::create("cocosui/check_box_normal.png",
 										"cocosui/check_box_normal_press.png",
 										"cocosui/check_box_active.png",
@@ -41,15 +45,22 @@ Layout* labelled_cb(std::string text, CheckBox::ccCheckBoxCallback cb)
 										"cocosui/check_box_active_disable.png");
 	chb->setSelectedState(true);
 	chb->addEventListener(cb);
+	chb->setLayoutParameter(p);
 	l->addChild(chb);
 	
     auto label = Text::create();
 	label->setString(text);
+	label->setFontSize(18);
+	label->setLayoutParameter(p);
 	l->addChild(label);
+	l->requestDoLayout();
+	auto height = std::max(chb->getSize().height, label->getSize().height);
+	l->setSize(Size(100, height));
 
 	return l;
 }
 
+VBox* left_menu;
 
 void WorldUI::init_menu()
 {
@@ -91,11 +102,24 @@ void WorldUI::init_menu()
 
 
 	// left menu
-	auto left_menu = VBox::create();
+	// auto 
+	left_menu = VBox::create();
+	p = LinearLayoutParameter::create();
+	p->setMargin(Margin(2, 2, 2, 2));
+	p->setGravity(LinearLayoutParameter::LinearGravity::LEFT);
 	auto cb_bck = labelled_cb("Background", [this](Ref* pSender,CheckBox::EventType type) {
 		_map->setVisible(type == CheckBox::EventType::SELECTED);
 	});
+	cb_bck->setLayoutParameter(p);
+	auto cb_grid = labelled_cb("Grid", [this](Ref* pSender,CheckBox::EventType type) {
+		_map->setVisible(type == CheckBox::EventType::SELECTED);
+	});
+	cb_grid->setLayoutParameter(p);
+
 	left_menu->addChild(cb_bck);
+	left_menu->addChild(cb_grid);
+
+	left_menu->setAnchorPoint(Vec2(0, 1));
 	left_menu->setPosition(Vec2(0, h));
 
 	this->addChild(left_menu);
@@ -120,6 +144,7 @@ bool WorldUI::init()
     _map = Sprite::create("map.png");
 
     // position the sprite on the center of the screen
+	//_map->setAnchorPoint(Vec2(0, 0));
     _map->setPosition(Vec2(visibleSize / 2));
 	_map->setScale(1);
     // add the sprite as a child to this layer
@@ -220,6 +245,11 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 void WorldUI::onEnter()
 {
 	Layer::onEnter();
+	//auto visibleSize = Director::getInstance()->getVisibleSize();
+	//auto w = visibleSize.width;
+	//auto h = visibleSize.height;
+	//left_menu->setSize(left_menu->getContentSize());
+	//left_menu->setPosition(Vec2(0, h)); // - left_menu->getSize().height / 2));
 }
 
 void WorldUI::menuCloseCallback(Ref* sender)
