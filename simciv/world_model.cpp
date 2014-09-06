@@ -13,6 +13,25 @@ namespace simciv
 		}
 	}
 
+	void Area::get_trans(int id, double& x, double& y)
+	{
+		double vx = 0;
+		double vy = 0;
+		Area* a = this;
+		for (Road* r: _roads)
+		{
+			double t = r->t[id];
+			if (!(t > 0 ^ r->a == a))
+			{
+				Area* b = r->other(a);
+				vx += (b->x - a->x) * abs(t);
+				vy += (b->y - a->y) * abs(t);
+			}
+		}
+		x = vx;
+		y = vy;
+	}
+
 	AreaProd::AreaProd(): 
 		p(-1),
 		p_dem(0),
@@ -228,7 +247,7 @@ namespace simciv
 		{
 			volume = -volume;
 			//a.p_dem =	a.prod_p_dem = (a.prod_p_dem * a.prod_v_dem + volume * price) / (a.prod_p_dem + volume);
-			a.p_dem =	a.prod_p_dem = price;
+			a.p_dem = a.prod_p_dem = price;
 			a.prod_v_dem += volume;
 		}
 		else

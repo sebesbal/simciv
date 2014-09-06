@@ -42,11 +42,13 @@ protected:
 	CustomCommand _customCommand;
     void onDraw(const Mat4 &transform, uint32_t flags);
 	void draw_rect(int x, int y, double rate);
+	void draw_vec(Vec2 a, Vec2 v);
     Rect get_rect(int x, int y);
 	void tick(float f);
 	Size _table;
 	bool _show_grid;
 	bool _show_price;
+	bool _show_transport;
 	Scheduler _draw_tiles;
 };
 

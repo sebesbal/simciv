@@ -33,7 +33,7 @@ Scene* WorldUI::scene()
 
 using namespace ui;
 
-Layout* labelled_cb(std::string text, CheckBox::ccCheckBoxCallback cb)
+Layout* labelled_cb(std::string text, bool checked, CheckBox::ccCheckBoxCallback cb)
 {
 	auto l = HBox::create();
 	auto p = LinearLayoutParameter::create();
@@ -44,7 +44,7 @@ Layout* labelled_cb(std::string text, CheckBox::ccCheckBoxCallback cb)
 										"cocosui/check_box_active.png",
 										"cocosui/check_box_normal_disable.png",
 										"cocosui/check_box_active_disable.png");
-	chb->setSelectedState(true);
+	chb->setSelectedState(checked);
 	chb->addEventListener(cb);
 	chb->setLayoutParameter(p);
 	l->addChild(chb);
@@ -108,23 +108,33 @@ void WorldUI::init_menu()
 	p = LinearLayoutParameter::create();
 	p->setMargin(Margin(2, 2, 2, 2));
 	p->setGravity(LinearLayoutParameter::LinearGravity::LEFT);
-	auto cb_bck = labelled_cb("Background", [this](Ref* pSender,CheckBox::EventType type) {
+
+	auto cb_bck = labelled_cb("Background", true, [this](Ref* pSender,CheckBox::EventType type) {
 		_map->setVisible(type == CheckBox::EventType::SELECTED);
 	});
 	cb_bck->setLayoutParameter(p);
-	auto cb_grid = labelled_cb("Grid", [this](Ref* pSender,CheckBox::EventType type) {
+	left_menu->addChild(cb_bck);
+	
+	_show_grid = true;
+	auto cb_grid = labelled_cb("Grid", _show_grid, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_grid = !_show_grid;
 	});
 	cb_grid->setLayoutParameter(p);
+	left_menu->addChild(cb_grid);
 
-	auto cb_price = labelled_cb("Price", [this](Ref* pSender,CheckBox::EventType type) {
+	_show_price = true;
+	auto cb_price = labelled_cb("Price", _show_price, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_price = !_show_price;
 	});
 	cb_price->setLayoutParameter(p);
-
-	left_menu->addChild(cb_bck);
-	left_menu->addChild(cb_grid);
 	left_menu->addChild(cb_price);
+	
+	_show_transport = true;
+	auto cb_transport = labelled_cb("Transp.", _show_transport, [this](Ref* pSender,CheckBox::EventType type) {
+		_show_transport = !_show_transport;
+	});
+	cb_transport->setLayoutParameter(p);
+	left_menu->addChild(cb_transport);
 
 	left_menu->setAnchorPoint(Vec2(0, 1));
 	left_menu->setPosition(Vec2(0, h));
@@ -145,8 +155,6 @@ bool WorldUI::init()
 	// init model
 	
 	_mode = IT_FACTORY;
-	_show_grid = true;
-	_show_price = true;
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -221,6 +229,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 	if (_show_grid)
 	{
+		glLineWidth(1);
 		float x = b.getMinX();
 		for (int i = 0; i <= _model.width(); ++i, x += cs)
 		{
@@ -255,6 +264,22 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			draw_rect(a->x, a->y, r);
 		}
 	}
+
+	if (_show_transport)
+	{
+		//DrawPrimitives::setDrawColor4F(0, 0, 1, 1);
+		glLineWidth(3);
+		double scale = 1;
+
+		for (Area* a: _model.areas())
+		{
+			double x, y;
+			a->get_trans(0, x, y);
+			Rect r = get_rect(a->x, a->y);
+			Vec2 p = Vec2(r.getMidX(), r.getMidY());
+			DrawPrimitives::drawLine(p, Vec2(p.x + scale * x, p.y + scale * y));
+		}
+	}
 }
 
 void WorldUI::draw_rect(int x, int y, double rate)
@@ -262,6 +287,11 @@ void WorldUI::draw_rect(int x, int y, double rate)
 	Rect r = get_rect(x, y);
 	
 	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, 0.5));
+}
+
+void WorldUI::draw_vec(Vec2 a, Vec2 v)
+{
+
 }
 
 Rect WorldUI::get_rect(int x, int y)
@@ -273,7 +303,6 @@ Rect WorldUI::get_rect(int x, int y)
 
 void WorldUI::tick(float f)
 {
-	// ++lofusz;
 	_model.end_turn();
 }
 

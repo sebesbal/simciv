@@ -10,6 +10,7 @@ namespace simciv
 	struct Area
 	{
 		Area(int pc);
+		void get_trans(int id, double& x, double& y);
 		int x;
 		int y;
 		std::vector<Road*> _roads;
