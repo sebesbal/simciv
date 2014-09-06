@@ -4,7 +4,7 @@
 #include <string>
 
 #include "HelloWorldScene.h"
-#include "Test1.h"
+#include "world_ui.h"
 #include "AppMacros.h"
 
 USING_NS_CC;
@@ -79,7 +79,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     //auto scene = HelloWorld::scene();
-	auto scene = Test1::scene();
+	auto scene = simciv::WorldUI::scene();
 
     // run
     director->runWithScene(scene);

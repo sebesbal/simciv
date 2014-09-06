@@ -87,28 +87,24 @@
   <ItemGroup>
     <ClInclude Include="AppDelegate.h" />
     <ClInclude Include="AppMacros.h" />
-    <ClInclude Include="CivMap.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="gclient.h" />
-    <ClInclude Include="HelloWorldScene.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Test1.h" />
     <ClInclude Include="world_model.h" />
+    <ClInclude Include="world_ui.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppDelegate.cpp" />
-    <ClCompile Include="CivMap.cpp" />
-    <ClCompile Include="HelloWorldScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="simciv.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Test1.cpp" />
     <ClCompile Include="world_model.cpp" />
+    <ClCompile Include="world_ui.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

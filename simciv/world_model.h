@@ -3,7 +3,8 @@
 
 namespace simciv
 {
-	class Road;
+	struct Road;
+	struct AreaProd;
 	const double max_price = 100000000000;
 
 	struct Area
@@ -49,11 +50,17 @@ namespace simciv
 		const std::vector<Road*>& roads() { return _roads; }
 		const std::vector<Area*>& areas() { return _areas; }
 		void end_turn();
-		void add_prod(const Area* area, int prod_id, double production);
+		void add_supply(Area* area, int prod_id, double volume, double price);
+		Area* get_area(int x, int y);
+		int width() { return _width; }
+		int height() { return _height; }
 	protected:
 		std::vector<Road*> _roads;
 		std::vector<Area*> _areas;
-
+		int _pc; ///< Product count
+		int _width;
+		int _height;
+		void add_road(Area* a, Area* b);
 	};
 
 
