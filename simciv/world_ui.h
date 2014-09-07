@@ -48,7 +48,9 @@ protected:
 	Size _table;
 	bool _show_grid;
 	bool _show_price;
-	bool _show_supply_volume;
+	bool _show_volume;
+	bool _show_supply;
+	bool _show_demand;
 	bool _show_transport;
 };
 

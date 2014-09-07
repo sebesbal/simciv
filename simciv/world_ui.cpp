@@ -89,7 +89,8 @@ void WorldUI::init_menu()
 	factory_button->setLayoutParameter(p);
 	right_menu->addChild(factory_button);
 
-	auto mine_button = Button::create("mine2.png", "mine2.png", "mine2.png");
+	// auto mine_button = Button::create("mine2.png", "mine2.png", "mine2.png");
+	auto mine_button = Button::create("mine3.png", "mine3.png", "mine3.png");
 	mine_button->addTouchEventListener([this](Ref* w, Widget::TouchEventType e) {
 		_mode = IT_MINE;
 	});
@@ -116,11 +117,11 @@ void WorldUI::init_menu()
 	left_menu->addChild(cb_bck);
 	
 	_show_grid = false;
-	auto cb_grid = labelled_cb("Grid", _show_grid, [this](Ref* pSender,CheckBox::EventType type) {
-		_show_grid = !_show_grid;
-	});
-	cb_grid->setLayoutParameter(p);
-	left_menu->addChild(cb_grid);
+	//auto cb_grid = labelled_cb("Grid", _show_grid, [this](Ref* pSender,CheckBox::EventType type) {
+	//	_show_grid = !_show_grid;
+	//});
+	//cb_grid->setLayoutParameter(p);
+	//left_menu->addChild(cb_grid);
 
 	_show_price = true;
 	auto cb_price = labelled_cb("Price", _show_price, [this](Ref* pSender,CheckBox::EventType type) {
@@ -128,16 +129,30 @@ void WorldUI::init_menu()
 	});
 	cb_price->setLayoutParameter(p);
 	left_menu->addChild(cb_price);
-	
-	_show_supply_volume = false;
-	auto cb_supply = labelled_cb("Supply", _show_supply_volume, [this](Ref* pSender,CheckBox::EventType type) {
-		_show_supply_volume = !_show_supply_volume;
+
+	_show_volume = true;
+	auto cb_volume = labelled_cb("Volume", _show_volume, [this](Ref* pSender,CheckBox::EventType type) {
+		_show_volume = !_show_volume;
+	});
+	cb_volume->setLayoutParameter(p);
+	left_menu->addChild(cb_volume);
+
+	_show_supply = false;
+	auto cb_supply = labelled_cb("Supply", _show_supply, [this](Ref* pSender,CheckBox::EventType type) {
+		_show_supply = !_show_supply;
 	});
 	cb_supply->setLayoutParameter(p);
 	left_menu->addChild(cb_supply);
 
+	_show_demand = false;
+	auto cb_demand = labelled_cb("Demand", _show_demand, [this](Ref* pSender,CheckBox::EventType type) {
+		_show_demand = !_show_demand;
+	});
+	cb_demand->setLayoutParameter(p);
+	left_menu->addChild(cb_demand);
+
 	_show_transport = true;
-	auto cb_transport = labelled_cb("Transp.", _show_transport, [this](Ref* pSender,CheckBox::EventType type) {
+	auto cb_transport = labelled_cb("Flow", _show_transport, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_transport = !_show_transport;
 	});
 	cb_transport->setLayoutParameter(p);
@@ -274,7 +289,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		}
 	}
 
-	if (_show_supply_volume)
+	if (_show_supply)
 	{
 		for (Area* a: _model.areas())
 		{
@@ -345,9 +360,9 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 	{
 	case simciv::IT_MINE:
 		{
-			auto mine1 = Sprite::create("mine2.png");
+			auto mine1 = Sprite::create("mine3.png");
 			mine1->setPosition(x, y);
-			mine1->setScale(0.15);
+			mine1->setScale(0.05);
 			_items->addChild(mine1);
 			_model.add_supply(a, 0, 100, 10);
 		}
