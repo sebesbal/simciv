@@ -136,7 +136,7 @@ namespace simciv
 	void WorldModel::end_turn_prod(int id)
 	{
 		// modify transport
-		int n = 1;
+		int n = 5;
 		for (int i = 0; i < n; ++i)
 		for (Road* r: _roads)
 		{
@@ -148,19 +148,19 @@ namespace simciv
 				double dp = b.p - a.p;
 				if (dp > trans_price)
 				{
-					r->t[id] += 0.1 * (dp - trans_price);
+					r->t[id] += 0.01 * (dp - trans_price);
 				}
 				else if (dp < -trans_price)
 				{
-					r->t[id] += 0.1 * (dp + trans_price);
+					r->t[id] += 0.01 * (dp + trans_price);
 				}
 				else
 				{
 					if (i == n - 1)
 					{
-						if (r->t[id] > 10)
+						if (r->t[id] > 0)
 						{
-							r->t[id] *= 0.99;
+							r->t[id] *= 0.95;
 						}
 						else
 						{
@@ -179,8 +179,8 @@ namespace simciv
 			double v_dem = 0;
 			double m_sup = 0; // money
 			double m_dem = 0;
-			double min_p_sup = std::min(a.p_sup, a.prod_p_sup);
-			double max_p_dem = std::max(a.p_dem, a.prod_p_dem);
+			double min_p_sup = a.p_sup;// std::min(a.p_sup, a.prod_p_sup);
+			double max_p_dem = a.p_dem;// std::max(a.p_dem, a.prod_p_dem);
 			double sum_p = 0;
 
 			for (Road* r: area->_roads)
@@ -229,7 +229,7 @@ namespace simciv
 			v_dem += a.prod_v_dem;
 			m_dem += a.prod_v_dem * a.prod_p_dem;
 
-			double beta = 0.05;
+			double beta = 0.02;
 			// modify sup price
 			if (v_sup == 0)
 			{

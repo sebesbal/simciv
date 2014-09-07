@@ -122,14 +122,14 @@ void WorldUI::init_menu()
 	cb_grid->setLayoutParameter(p);
 	left_menu->addChild(cb_grid);
 
-	_show_price = false;
+	_show_price = true;
 	auto cb_price = labelled_cb("Price", _show_price, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_price = !_show_price;
 	});
 	cb_price->setLayoutParameter(p);
 	left_menu->addChild(cb_price);
 	
-	_show_supply_volume = true;
+	_show_supply_volume = false;
 	auto cb_supply = labelled_cb("Supply", _show_supply_volume, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_supply_volume = !_show_supply_volume;
 	});
@@ -278,7 +278,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 	{
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].v_sup;
+			double v = a->_prod[0].v;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
 		}
@@ -286,7 +286,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].v_sup;
+			double v = a->_prod[0].v;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
 			draw_rect(a->x, a->y, r, 0.5);
 		}
