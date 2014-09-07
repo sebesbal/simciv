@@ -126,7 +126,7 @@ namespace simciv
 		{
 			double x = v_dem / v - 0.5;
 			// double k = 6; // if the k is bigger, the sigmoid is "sharper"
-			double k = 6;
+			double k = 4;
 			double d = tanh(k * x);
 			double alpha = (d + 1) / 2;
 			return alpha * p_dem + (1 - alpha) * p_sup;
@@ -164,13 +164,14 @@ namespace simciv
 						}
 						else
 						{
-							r->t[id] *= 0.8;
+							r->t[id] *= 0.5;
 						}
 					}
 				}
 			}
 		}
 
+		//for (int i = 0; i < 5; ++i)
 		for (Area* area: _areas)
 		{
 			AreaProd& a = area->_prod[id];
@@ -178,8 +179,8 @@ namespace simciv
 			double v_dem = 0;
 			double m_sup = 0; // money
 			double m_dem = 0;
-			double min_p_sup = a.prod_p_sup;
-			double max_p_dem = a.prod_p_dem;
+			double min_p_sup = std::min(a.p_sup, a.prod_p_sup);
+			double max_p_dem = std::max(a.p_dem, a.prod_p_dem);
 			double sum_p = 0;
 
 			for (Road* r: area->_roads)

@@ -253,6 +253,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 	double min_v = 1000;
 	double max_v = 0;
+	double max_vol = 0;
 
 	if (_show_price)
 	{
@@ -261,6 +262,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			double v = a->_prod[0].p;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
+			max_vol = std::max(max_v, a->_prod[0].v);
 		}
 		double d = max_v - min_v;
 
@@ -268,7 +270,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		{
 			double v = a->_prod[0].p;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			draw_rect(a->x, a->y, r);
+			draw_rect(a->x, a->y, r, a->_prod[0].v / max_vol);
 		}
 	}
 
@@ -286,7 +288,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		{
 			double v = a->_prod[0].v_sup;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			draw_rect(a->x, a->y, r);
+			draw_rect(a->x, a->y, r, 0.5);
 		}
 	}
 
@@ -307,11 +309,11 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 	}
 }
 
-void WorldUI::draw_rect(int x, int y, double rate)
+void WorldUI::draw_rect(int x, int y, double rate, double alpha)
 {
 	Rect r = get_rect(x, y);
 	
-	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, 0.5));
+	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, alpha));
 }
 
 void WorldUI::draw_vec(Vec2 a, Vec2 v)

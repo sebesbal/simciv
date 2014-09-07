@@ -34,14 +34,14 @@ public:
 
 	Item* add_item(ItemType type, int x, int y);
 protected:
-	static const int cs = 100; // cell size
+	static const int cs = 50; // cell size
 	cocos2d::Node* _items;
 	cocos2d::Node* _map;
 	WorldModel _model;
 	ItemType _mode;
 	CustomCommand _customCommand;
     void onDraw(const Mat4 &transform, uint32_t flags);
-	void draw_rect(int x, int y, double rate);
+	void draw_rect(int x, int y, double rate, double alpha);
 	void draw_vec(Vec2 a, Vec2 v);
     Rect get_rect(int x, int y);
 	void tick(float f);
