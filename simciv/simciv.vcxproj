@@ -52,13 +52,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;COCOS2D_DEBUG=1;GDEBUG;_DEBUG;_CONSOLE;_VARIADIC_MAX=10;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>G:\dev\cocos2d-x-3.2alpha0\cocos;G:\dev\cocos2d-x-3.2alpha0\cocos\platform\win32;G:\dev\cocos2d-x-3.2alpha0\external\win32-specific\gles\include\OGLES;G:\dev\cocos2d-x-3.2alpha0\external\glfw3\include\win32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Dev)cocos2d-x-3.2\cocos;$(Dev)cocos2d-x-3.2\cocos\platform\win32;$(Dev)cocos2d-x-3.2\external\win32-specific\gles\include\OGLES;$(Dev)cocos2d-x-3.2\external\glfw3\include\win32</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\dev\cocos2d-x-3.2alpha0\build\Debug.win32</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libExtensions.lib;libcocos2d.lib;libchipmunk.lib;opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;glfw3.lib;freetype250.lib;winmm.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(Dev)cocos2d-x-3.2\build\Release.win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libExtensions.lib;libcocos2d.lib;libchipmunk.lib;opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;glfw3.lib;freetype250.lib;winmm.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libgui.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -70,15 +70,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>G:\dev\cocos2d-x-3.2alpha0\cocos;G:\dev\cocos2d-x-3.2alpha0\cocos\platform\win32;G:\dev\cocos2d-x-3.2alpha0\external\win32-specific\gles\include\OGLES;G:\dev\cocos2d-x-3.2alpha0\external\glfw3\include\win32</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Dev)cocos2d-x-3.2\cocos;$(Dev)cocos2d-x-3.2\cocos\platform\win32;$(Dev)cocos2d-x-3.2\external\win32-specific\gles\include\OGLES;$(Dev)cocos2d-x-3.2\external\glfw3\include\win32</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>G:\dev\cocos2d-x-3.2alpha0\build\Debug.win32</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcocos2d.lib;libchipmunk.lib;libgui.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(Dev)cocos2d-x-3.2\build\Release.win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libExtensions.lib;libcocos2d.lib;libchipmunk.lib;opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;glfw3.lib;freetype250.lib;winmm.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libgui.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
