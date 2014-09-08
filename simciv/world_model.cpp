@@ -133,6 +133,8 @@ namespace simciv
 		}
 	}
 
+	const double trans_rate = 1.5;
+
 	void WorldModel::end_turn_prod(int id)
 	{
 		// modify transport
@@ -141,26 +143,34 @@ namespace simciv
 		for (Road* r: _roads)
 		{
 			double trans_price = r->t_price;
+			double trans_price2 = trans_rate * trans_price;
+
 			AreaProd& a = r->a->_prod[id];
 			AreaProd& b = r->b->_prod[id];
 			if (a.p > 0 && b.p > 0)
 			{
 				double dp = b.p - a.p;
-				if (dp > trans_price)
+				double dv = b.v - a.v;
+
+				if (dp > trans_price2)// && dv < 0)
 				{
-					r->t[id] += 0.01 * (dp - trans_price);
+					r->t[id] += std::min(0.1 * (dp - trans_price2) * (1), 1.0);
 				}
-				else if (dp < -trans_price)
+				else if (dp < -trans_price2) // && dv > 0)
 				{
-					r->t[id] += 0.01 * (dp + trans_price);
+					r->t[id] += std::min(0.1 * (dp + trans_price2) * (1), 1.0);
+				}
+				else if (abs(dp) < trans_price && abs(dp) > trans_price)
+				{
+					// Skip
 				}
 				else
 				{
 					if (i == n - 1)
 					{
-						if (r->t[id] > 0)
+						if (abs(r->t[id]) > 1)
 						{
-							r->t[id] *= 0.95;
+							r->t[id] *= 0.99;
 						}
 						else
 						{
@@ -185,7 +195,7 @@ namespace simciv
 
 			for (Road* r: area->_roads)
 			{
-				double trans_price = r->t_price;
+				double trans_price = trans_rate * r->t_price;
 				Area* area_b = r->other(area);
 				AreaProd& b = area_b->_prod[id];
 				sum_p += b.p;
@@ -243,7 +253,7 @@ namespace simciv
 				a.p_sup = (1 - beta) * a.p_sup + beta * m_sup / v_sup;
 			}
 
-			a.v = v_sup + v_dem;
+			a.v = v_sup - v_dem;
 			a.v_sup = v_sup;
 			a.v_dem = v_dem;
 

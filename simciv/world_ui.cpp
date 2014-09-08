@@ -268,6 +268,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 	double min_v = 1000;
 	double max_v = 0;
+	double min_vol = 1000;
 	double max_vol = 0;
 
 	if (_show_price)
@@ -277,15 +278,19 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			double v = a->_prod[0].p;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
-			max_vol = std::max(max_v, a->_prod[0].v);
+			double vol = a->_prod[0].v_dem + a->_prod[0].v_sup;
+			min_vol = std::min(min_vol, vol);
+			max_vol = std::max(max_vol, vol);
 		}
 		double d = max_v - min_v;
+		double d_vol = max_vol - min_vol;
 
 		for (Area* a: _model.areas())
 		{
 			double v = a->_prod[0].p;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			draw_rect(a->x, a->y, r, a->_prod[0].v / max_vol);
+			double vol = a->_prod[0].v_dem + a->_prod[0].v_sup;
+			draw_rect(a->x, a->y, r, vol / d_vol);
 		}
 	}
 
