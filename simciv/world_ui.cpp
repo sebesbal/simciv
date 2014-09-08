@@ -216,8 +216,31 @@ bool WorldUI::init()
 	// _draw_tiles.schedule(schedule_selector(WorldUI::tick), this, 0.1, kRepeatForever, 0, false);
 	this->schedule(schedule_selector(WorldUI::tick), 0.05, kRepeatForever, 0);
 
-	add_item(IT_FACTORY, _table.width / 3, _table.height / 2);
-	add_item(IT_MINE, 2 * _table.width / 3, _table.height / 2);
+
+	int x = _table.width / 3;
+	int y = _table.height / 2 - _table.width / 6;
+	int n = 3;
+	int m = 3 * cs;
+	int k = 0;
+	
+
+	add_item(IT_MINE,		x + 0 * m, y + 0 * m);
+	add_item(IT_FACTORY,	x + 0 * m, y + 1 * m);
+	add_item(IT_MINE,		x + 1 * m, y + 1 * m);
+	add_item(IT_FACTORY,	x + 1 * m, y + 2 * m);
+
+	//for (int i = 0; i < n; ++i)
+	//{
+	//	for (int j = 0; j < n; ++j)
+	//	{
+	//		//int d = _table.width / (2 * (n + 1));
+	//		//add_item(k == 0 ? IT_FACTORY : IT_MINE, _table.width / 3 + (i + 1) * d, _table.height / 2 - (n * d) / 2 + (j + 1) * d);
+	//		add_item(k == 0 ? IT_FACTORY : IT_MINE, x + i * m * cs, y + j * m * cs);
+	//		k = 1 - k;
+	//	}
+	//	if (n % 2 == 0)
+	//		k = 1 - k;
+	//}
 
     return true;
 }
