@@ -216,8 +216,31 @@ bool WorldUI::init()
 	// _draw_tiles.schedule(schedule_selector(WorldUI::tick), this, 0.1, kRepeatForever, 0, false);
 	this->schedule(schedule_selector(WorldUI::tick), 0.05, kRepeatForever, 0);
 
-	add_item(IT_FACTORY, _table.width / 3, _table.height / 2);
-	add_item(IT_MINE, 2 * _table.width / 3, _table.height / 2);
+
+	int x = _table.width / 3;
+	int y = _table.height / 2 - _table.width / 6;
+	int n = 3;
+	int m = 3 * cs;
+	int k = 0;
+	
+
+	add_item(IT_MINE,		x + 0 * m, y + 0 * m);
+	add_item(IT_FACTORY,	x + 0 * m, y + 1 * m);
+	add_item(IT_MINE,		x + 1 * m, y + 1 * m);
+	add_item(IT_FACTORY,	x + 1 * m, y + 2 * m);
+
+	//for (int i = 0; i < n; ++i)
+	//{
+	//	for (int j = 0; j < n; ++j)
+	//	{
+	//		//int d = _table.width / (2 * (n + 1));
+	//		//add_item(k == 0 ? IT_FACTORY : IT_MINE, _table.width / 3 + (i + 1) * d, _table.height / 2 - (n * d) / 2 + (j + 1) * d);
+	//		add_item(k == 0 ? IT_FACTORY : IT_MINE, x + i * m * cs, y + j * m * cs);
+	//		k = 1 - k;
+	//	}
+	//	if (n % 2 == 0)
+	//		k = 1 - k;
+	//}
 
     return true;
 }
@@ -268,6 +291,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 	double min_v = 1000;
 	double max_v = 0;
+	double min_vol = 1000;
 	double max_vol = 0;
 
 	if (_show_price)
@@ -277,15 +301,19 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			double v = a->_prod[0].p;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
-			max_vol = std::max(max_v, a->_prod[0].v);
+			double vol = a->_prod[0].v_dem + a->_prod[0].v_sup;
+			min_vol = std::min(min_vol, vol);
+			max_vol = std::max(max_vol, vol);
 		}
 		double d = max_v - min_v;
+		double d_vol = max_vol - min_vol;
 
 		for (Area* a: _model.areas())
 		{
 			double v = a->_prod[0].p;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			draw_rect(a->x, a->y, r, a->_prod[0].v / max_vol);
+			double vol = a->_prod[0].v_dem + a->_prod[0].v_sup;
+			draw_rect(a->x, a->y, r, vol / d_vol);
 		}
 	}
 
@@ -330,7 +358,6 @@ void WorldUI::draw_rect(int x, int y, double rate, double alpha)
 	
 	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, alpha));
 }
-
 
 void WorldUI::draw_vec(Vec2 a, Vec2 v)
 {
