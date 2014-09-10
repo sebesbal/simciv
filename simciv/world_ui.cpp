@@ -331,6 +331,7 @@ void WorldUI::draw_rect(int x, int y, double rate, double alpha)
 	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, alpha));
 }
 
+
 void WorldUI::draw_vec(Vec2 a, Vec2 v)
 {
 
