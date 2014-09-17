@@ -133,7 +133,7 @@ namespace simciv
 		}
 	}
 
-	const double trans_rate = 1.5;
+	const double trans_rate = 1.0;
 
 	void WorldModel::end_turn_prod(int id)
 	{
@@ -213,7 +213,7 @@ namespace simciv
 					{
 						if (b.p_dem > 0)
 						{
-							max_p_dem = std::max(max_p_dem, b.p_dem + trans_price);
+							max_p_dem = std::max(max_p_dem, b.p_dem - trans_price);
 						}
 					}
 				}
@@ -221,7 +221,7 @@ namespace simciv
 				{
 					// a --> b
 					v_dem += dt;
-					m_dem += dt * (b.p_dem + trans_price);
+					m_dem += dt * (b.p_dem - trans_price);
 				}
 				else
 				{
