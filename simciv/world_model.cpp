@@ -133,12 +133,12 @@ namespace simciv
 		}
 	}
 
-	const double trans_rate = 1.0;
+	const double trans_rate = 1.1;
 
 	void WorldModel::end_turn_prod(int id)
 	{
 		// modify transport
-		int n = 5;
+		int n = 1;
 		for (int i = 0; i < n; ++i)
 		for (Road* r: _roads)
 		{
@@ -147,47 +147,52 @@ namespace simciv
 
 			AreaProd& a = r->a->_prod[id];
 			AreaProd& b = r->b->_prod[id];
-			if (a.p > 0 && b.p > 0)
-			{
-				double dp = b.p - a.p;
-				double dv = b.v - a.v;
 
-				if (dp > trans_price2)// && dv < 0)
-				{
-					r->t[id] += std::min(0.1 * (dp - trans_price2) * (1), 0.5);
-				}
-				else if (dp < -trans_price2) // && dv > 0)
-				{
-					r->t[id] += std::min(0.1 * (dp + trans_price2) * (1), 0.5);
-				}
-				else if (abs(dp) < trans_price && abs(dp) > trans_price)
-				{
-					// Skip
-				}
-				else
-				{
-					if (i == n - 1)
-					{
-						//if (abs(r->t[id]) > 1)
-						//{
-						//	r->t[id] *= 0.99;
-						//}
-						//else
-						//{
-						//	r->t[id] *= 0.90;
-						//}
+			double dv = b.v - a.v;
+			r->t[id] -= 0.1 * dv;
 
-						if (abs(r->t[id]) > 1)
-						{
-							r->t[id] -= 1 / r->t[id];
-						}
-						else
-						{
-							r->t[id] *= 0.5;
-						}
-					}
-				}
-			}
+			//if (a.p > 0 && b.p > 0)
+			//{
+			//	double dp = b.p - a.p;
+			//	double dv = b.v - a.v;
+
+			//	if (dp > trans_price2 && dv < 0)
+			//	{
+			//		r->t[id] += std::min(0.1 * (dp - trans_price2) * (1), 0.1);
+			//	}
+			//	else if (dp < -trans_price2 && dv > 0)
+			//	{
+			//		r->t[id] += std::min(0.1 * (dp + trans_price2) * (1), 0.1);
+			//	}
+			//	else if (abs(dp) < trans_price && abs(dp) > trans_price)
+			//	{
+			//		//r->t[id] *= 0.99;
+			//		// Skip
+			//	}
+			//	else
+			//	{
+			//		if (i == n - 1)
+			//		{
+			//			if (abs(r->t[id]) > 1)
+			//			{
+			//				r->t[id] *= 0.99;
+			//			}
+			//			else
+			//			{
+			//				r->t[id] *= 0.90;
+			//			}
+
+			//			//if (abs(r->t[id]) > 1)
+			//			//{
+			//			//	r->t[id] -= 1 / r->t[id];
+			//			//}
+			//			//else
+			//			//{
+			//			//	r->t[id] *= 0.5;
+			//			//}
+			//		}
+			//	}
+			//}
 		}
 
 		//for (int i = 0; i < 5; ++i)
@@ -198,32 +203,32 @@ namespace simciv
 			double v_dem = 0;
 			double m_sup = 0; // money
 			double m_dem = 0;
-			double min_p_sup = a.p_sup;// std::min(a.p_sup, a.prod_p_sup);
-			double max_p_dem = a.p_dem;// std::max(a.p_dem, a.prod_p_dem);
+			double min_p_sup = a.prod_p_sup; // a.p_sup;// std::min(a.p_sup, a.prod_p_sup);
+			double max_p_dem = a.prod_p_dem; // a.p_dem;// std::max(a.p_dem, a.prod_p_dem);
 			double sum_p = 0;
+
+			bool border = (area->x == 0 || area->x == _width - 1 
+				|| area->y == 0 || area->y == _height - 1);
 
 			for (Road* r: area->_roads)
 			{
-				double trans_price = trans_rate * r->t_price;
+				double trans_price = r->t_price;
 				Area* area_b = r->other(area);
 				AreaProd& b = area_b->_prod[id];
 				sum_p += b.p;
 
 				double t = r->t[id];
-				double dt = abs(t);
+				double dt = std::max(abs(t), 0.1);
 
 				if (t == 0)
 				{
-					if (v_sup == 0)
+					if (v_sup == 0 && b.p_sup < max_price && b.v_sup > 0)
 					{
 						min_p_sup = std::min(min_p_sup, b.p_sup + trans_price);
 					}
-					if (v_dem == 0)
+					if (v_dem == 0 && b.p_dem > 0) // && b.v_dem > 0) // && )
 					{
-						if (b.p_dem > 0)
-						{
-							max_p_dem = std::max(max_p_dem, b.p_dem + trans_price);
-						}
+						max_p_dem = std::max(max_p_dem, b.p_dem + trans_price);
 					}
 				}
 				else if (!(t > 0 ^ r->a == area))
@@ -238,15 +243,35 @@ namespace simciv
 					v_sup += dt;
 					m_sup += dt * (b.p_sup + trans_price);
 				}
-			}
 
-			sum_p = 0.5 * sum_p / 9 + 0.5 * a.p;
+				//double dv = b.v - a.v;
+
+				//if (!(t > 0 ^ r->a == area))
+				//{
+				//	// a --> b
+				//	v_dem += dt;
+				//	m_dem += dt * (b.p_dem + trans_price);
+				//}
+				//else
+				//{
+				//	// b --> a
+				//	v_sup += dt;
+				//	m_sup += dt * (b.p_sup + trans_price);
+				//}
+			}
 
 			v_sup += a.prod_v_sup;
 			m_sup += a.prod_v_sup * a.prod_p_sup;
 
 			v_dem += a.prod_v_dem;
 			m_dem += a.prod_v_dem * a.prod_p_dem;
+
+			//if (area->x == 0 || area->x == _width - 1 
+			//	|| area->y == 0 || area->y == _height - 1)
+			//{
+			//	v_sup = 0;
+			//	v_dem = 0;
+			//}
 
 			double beta = 0.02;
 			// modify sup price
@@ -285,7 +310,7 @@ namespace simciv
 			}
 
 			// modify price
-			double new_p = price(a.p_sup, v_sup, a.p_dem, v_dem);
+			double new_p = border ? (a.p_sup + a.p_dem) / 2 : price(a.p_sup, v_sup, a.p_dem, v_dem);
 			if (new_p != -1)
 			{
 				// double alpha = 0.02;

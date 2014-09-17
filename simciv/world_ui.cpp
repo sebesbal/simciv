@@ -321,7 +321,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 	{
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].v;
+			double v = abs(a->_prod[0].v);
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
 		}
@@ -330,7 +330,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		for (Area* a: _model.areas())
 		{
 			double v = a->_prod[0].v;
-			double r = d == 0 ? 0.5 : (v - min_v) / d;
+			double r = d == 0 ? 0.5 : (abs(v)) / d;
 			draw_rect(a->x, a->y, r, 0.5);
 		}
 	}
@@ -358,6 +358,7 @@ void WorldUI::draw_rect(int x, int y, double rate, double alpha)
 	
 	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, alpha));
 }
+
 
 void WorldUI::draw_vec(Vec2 a, Vec2 v)
 {
