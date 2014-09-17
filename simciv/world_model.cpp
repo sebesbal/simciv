@@ -133,7 +133,7 @@ namespace simciv
 		}
 	}
 
-	const double trans_rate = 1.0;
+	const double trans_rate = 1.1;
 
 	void WorldModel::end_turn_prod(int id)
 	{
@@ -152,7 +152,7 @@ namespace simciv
 				double dp = b.p - a.p;
 				double dv = b.v - a.v;
 
-				if (dp > trans_price2)// && dv < 0)
+				if (dp > trans_price2) // && dv < 0)
 				{
 					r->t[id] += std::min(0.1 * (dp - trans_price2) * (1), 1.0);
 				}
@@ -195,7 +195,7 @@ namespace simciv
 
 			for (Road* r: area->_roads)
 			{
-				double trans_price = trans_rate * r->t_price;
+				double trans_price = r->t_price;
 				Area* area_b = r->other(area);
 				AreaProd& b = area_b->_prod[id];
 				sum_p += b.p;
