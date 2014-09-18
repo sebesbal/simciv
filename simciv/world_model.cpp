@@ -150,14 +150,14 @@ namespace simciv
 				double dp = b.p - a.p;
 				double dv = a.v - b.v;
 
-				if (dp > trans_price2) // && a.v > 0)
+				if (dp > trans_price2 && dv > 0)
 				{
 					// r->t[id] += std::min(0.01 * (dp - trans_price2) * (1), 1.0);
-					r->t[id] += 0.01 * (dp - trans_price2) * a.v;
+					r->t[id] += 0.01 * (dp - trans_price2) * dv;
 				}
-				else if (dp < -trans_price2) // && b.v < 0)
+				else if (dp < -trans_price2 && dv < 0)
 				{
-					r->t[id] += 0.01 * (dp + trans_price2) * b.v;
+					r->t[id] += 0.01 * (dp + trans_price2) * (- dv);
 				}
 				else if (abs(dp) < trans_price && abs(dp) > trans_price)
 				{
