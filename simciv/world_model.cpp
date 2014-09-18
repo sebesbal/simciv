@@ -129,44 +129,45 @@ namespace simciv
 		}
 	}
 
-	const double trans_rate = 1.00;
+	const double trans_rate = 1.0;
 
 	void WorldModel::end_turn_prod(int id)
 	{
 		// modify transport
-		int n = 5;
+		int n = 1;
 		for (int i = 0; i < n; ++i)
 		for (Road* r: _roads)
 		{
 			double trans_price = r->t_price;
-			double trans_price2 = trans_rate;
+			// double trans_price2 = trans_rate;
+			double trans_price2 = trans_price * trans_rate;
 			const double eps = 0.001;
 
 			AreaProd& a = r->a->_prod[id];
 			AreaProd& b = r->b->_prod[id];
 
-			if (a.p > 0 || b.p > 0)
+			// if (a.p > 0 || b.p > 0)
 			{
 				double dp = b.p - a.p;
 				double dv = a.v - b.v;
 
-				if (dp > trans_price2 && dv > 0)
+				if (dp > trans_price2 && dv >= 0) // && b.v < 0)
 				{
 					// r->t[id] += std::min(0.01 * (dp - trans_price2) * (1), 1.0);
-					r->t[id] += 0.01 * (dp - trans_price2) * dv;
+					r->t[id] += 0.05 * (dp - trans_price2) * dv;
 				}
-				else if (dp < -trans_price2 && dv < 0)
+				else if (dp < -trans_price2 && dv < 0) // && a.v < 0)
 				{
-					r->t[id] += 0.01 * (dp + trans_price2) * (- dv);
+					r->t[id] += 0.05 * (dp + trans_price2) * (- dv);
 				}
-				else if (abs(dp) < trans_price && abs(dp) > trans_price)
-				{
-					// Skip
-					// r->t[id] *= 0.1;
-				}
+				//else if (abs(dp) < trans_price && abs(dp) > trans_price)
+				//{
+				//	// Skip
+				//	r->t[id] *= 0.99;
+				//}
 				else
 				{
-					r->t[id] *= 0.1;
+					r->t[id] *= 0.95;
 					//if (i == n - 1)
 					//{
 					//	if (abs(r->t[id]) > 1)
@@ -220,20 +221,21 @@ namespace simciv
 					sum_v += b.v_sup;
 				}
 
-				const double f = 0.0;
+
+				const double f = 0;
 				if (! (t > 0 ^ r->a == area))
 				{
 					// a --> b
 					v_dem += dt;
-					sum_v += f * dt;
-					m += f * dt * (b.p - trans_price);
+					//sum_v += f * dt;
+					//m += f * dt * (b.p - trans_price);
 				}
 				else
 				{
 					// b --> a
 					v_sup += dt;
-					sum_v += f * dt;
-					m += f * dt * (b.p + trans_price);
+					//sum_v += f * dt;
+					//m += f * dt * (b.p + trans_price);
 				}
 			}
 
