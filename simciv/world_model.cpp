@@ -151,12 +151,12 @@ namespace simciv
 				double dp = b.p - a.p;
 				double dv = a.v - b.v;
 
-				if (dp > trans_price2 && dv >= 0) // && b.v < 0)
+				if (dp > trans_price2 && dv > 0) // a.v >= 0 && b.v <= 0)
 				{
 					// r->t[id] += std::min(0.01 * (dp - trans_price2) * (1), 1.0);
 					r->t[id] += 0.05 * (dp - trans_price2) * dv;
 				}
-				else if (dp < -trans_price2 && dv < 0) // && a.v < 0)
+				else if (dp < -trans_price2 && dv < 0) // a.v <= 0 && b.v >= 0)
 				{
 					r->t[id] += 0.05 * (dp + trans_price2) * (- dv);
 				}
@@ -167,7 +167,7 @@ namespace simciv
 				//}
 				else
 				{
-					r->t[id] *= 0.95;
+					r->t[id] *= 0.9;
 					//if (i == n - 1)
 					//{
 					//	if (abs(r->t[id]) > 1)
@@ -200,7 +200,7 @@ namespace simciv
 
 				double t = r->t[id];
 				double dt = abs(t);
-				double dv = b.v - a.v;
+				double dv = a.v - b.v;
 				//double b_v = b.v_dem + b.v_sup;
 				//sum_v += b_v;
 
@@ -208,19 +208,31 @@ namespace simciv
 				{
 					// Skip
 				}
-				//else if (dv < 0)
+				////else if (dv < 0)
+				//{
+				//	// b-ben nagyobb a hiány mint a-ban, a-->b
+				//	m += b.v_dem * (b.p - trans_price);
+				//	sum_v += b.v_dem;
+				//}
+				////else
+				//{
+				//	// b --> a
+				//	m += b.v_sup * (b.p + trans_price);
+				//	sum_v += b.v_sup;
+				//}
+
+				if (dv > 0)
 				{
-					// b-ben nagyobb a hiány mint a-ban, a-->b
-					m += b.v_dem * (b.p - trans_price);
-					sum_v += b.v_dem;
+					// a-ban többlet van b-hez képest a-->b
+					sum_v += dv;
+					m += dv * (b.p - trans_price);
 				}
-				//else
+				else
 				{
 					// b --> a
-					m += b.v_sup * (b.p + trans_price);
-					sum_v += b.v_sup;
+					sum_v -= dv;
+					m -= dv * (b.p + trans_price);
 				}
-
 
 				const double f = 0;
 				if (! (t > 0 ^ r->a == area))
