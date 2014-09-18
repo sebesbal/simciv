@@ -21,8 +21,8 @@ namespace simciv
 	{
 		AreaProd();
 		double p;
-		double p_dem; // price demand
-		double p_sup; // supply
+		//double p_dem; // price demand
+		//double p_sup; // supply
 
 		double v_dem; // volume demand
 		double v_sup; // volume supply
