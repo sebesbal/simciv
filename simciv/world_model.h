@@ -32,6 +32,8 @@ namespace simciv
 		double prod_v_dem;
 		double prod_p_sup;
 		double prod_v_sup;
+
+		double profit; // profit per volume
 	};
 
 	struct Road

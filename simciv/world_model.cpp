@@ -38,7 +38,8 @@ namespace simciv
 		prod_v_dem(0),
 		prod_p_sup(max_price),
 		prod_v_sup(0),
-		v(0)
+		v(0),
+		profit(0)
 	{
 
 	}
@@ -151,37 +152,89 @@ namespace simciv
 				double dp = b.p - a.p;
 				double dv = a.v - b.v;
 
-				if (dp > trans_price2 && dv > 0) // a.v >= 0 && b.v <= 0)
+				//if (dp > trans_price2 && dv > 0) // a.v >= 0 && b.v <= 0)
+				//{
+				//	// r->t[id] += std::min(0.01 * (dp - trans_price2) * (1), 1.0);
+				//	r->t[id] += 0.05 * (dp - trans_price2) * dv;
+				//}
+				//else if (dp < -trans_price2 && dv < 0) // a.v <= 0 && b.v >= 0)
+				//{
+				//	r->t[id] += 0.05 * (dp + trans_price2) * (- dv);
+				//}
+
+				//double& t = r->t[id];
+				//double prof = (b.p - a.p - trans_price) / trans_price - a.profit;
+				//if (prof > 0)
+				//{
+				//	t += 0.5 * prof;
+				//}
+				//else
+				//{
+				//	prof = (a.p - b.p - trans_price) / trans_price - a.profit;
+				//	if (prof > 0)
+				//	{
+				//		t -= prof;
+				//	}
+				//	else
+				//	{
+				//		// t *= 0.99;
+				//	}
+				//}
+
+				double& t = r->t[id];
+				double c1 =	0.9;
+				double c2 = - 0.01;
+				double c3 = 0.9;
+				if (a.p < b.p)
 				{
-					// r->t[id] += std::min(0.01 * (dp - trans_price2) * (1), 1.0);
-					r->t[id] += 0.05 * (dp - trans_price2) * dv;
+					double prof = (b.p - a.p - trans_price) / trans_price - a.profit;
+					if (prof > 0)
+					{
+						t += c1 * prof;
+					}
+					else if (prof < c2)
+					{
+						t *= c3;
+					}
 				}
-				else if (dp < -trans_price2 && dv < 0) // a.v <= 0 && b.v >= 0)
+				else
 				{
-					r->t[id] += 0.05 * (dp + trans_price2) * (- dv);
+					double prof = (a.p - b.p - trans_price) / trans_price - a.profit;
+					if (prof > 0)
+					{
+						t -= c1 * prof;
+					}
+					else if (prof < c2)
+					{
+						t *= c3;
+					}
 				}
+
+
 				//else if (abs(dp) < trans_price && abs(dp) > trans_price)
 				//{
 				//	// Skip
 				//	r->t[id] *= 0.99;
 				//}
-				else
-				{
-					r->t[id] *= 0.9;
-					//if (i == n - 1)
-					//{
-					//	if (abs(r->t[id]) > 1)
-					//	{
-					//		r->t[id] *= 0.99;
-					//	}
-					//	else
-					//	{
-					//		r->t[id] *= 0.5;
-					//	}
-					//}
-				}
+				//else
+				//{
+				//	r->t[id] *= 0.9;
+				//	//if (i == n - 1)
+				//	//{
+				//	//	if (abs(r->t[id]) > 1)
+				//	//	{
+				//	//		r->t[id] *= 0.99;
+				//	//	}
+				//	//	else
+				//	//	{
+				//	//		r->t[id] *= 0.5;
+				//	//	}
+				//	//}
+				//}
 			}
 		}
+
+
 
 		//for (int i = 0; i < 5; ++i)
 		for (Area* area: _areas)
@@ -191,6 +244,7 @@ namespace simciv
 			double v_sup = 0; // volume
 			double m = 0; // money
 			double sum_v = 0;
+			double profit = 0;
 
 			for (Road* r: area->_roads)
 			{
@@ -204,10 +258,10 @@ namespace simciv
 				//double b_v = b.v_dem + b.v_sup;
 				//sum_v += b_v;
 
-				if (t == 0)
-				{
-					// Skip
-				}
+				//if (t == 0)
+				//{
+				//	// Skip
+				//}
 				////else if (dv < 0)
 				//{
 				//	// b-ben nagyobb a hiány mint a-ban, a-->b
@@ -241,6 +295,8 @@ namespace simciv
 					v_dem += dt;
 					//sum_v += f * dt;
 					//m += f * dt * (b.p - trans_price);
+
+					profit += (b.p - a.p - trans_price) * dt / trans_price;
 				}
 				else
 				{
@@ -248,7 +304,16 @@ namespace simciv
 					v_sup += dt;
 					//sum_v += f * dt;
 					//m += f * dt * (b.p + trans_price);
+
+					profit += (a.p - b.p - trans_price)  * dt / trans_price;
 				}
+			}
+
+
+			// profit /= v_dem + v_sup;
+			if (v_dem + v_sup > 0 && profit > 0)
+			{
+				a.profit = profit / (v_dem + v_sup);
 			}
 
 			v_sup += a.prod_v_sup;
