@@ -152,11 +152,11 @@ namespace simciv
 				double dp = b.p - a.p;
 				double dv = b.v - a.v;
 
-				if (dp > trans_price2)// && dv < 0)
+				if (dp > trans_price2 && dv < 0)
 				{
 					r->t[id] += std::min(0.1 * (dp - trans_price2) * (1), 1.0);
 				}
-				else if (dp < -trans_price2) // && dv > 0)
+				else if (dp < -trans_price2 && dv > 0)
 				{
 					r->t[id] += std::min(0.1 * (dp + trans_price2) * (1), 1.0);
 				}
@@ -213,7 +213,7 @@ namespace simciv
 					{
 						if (b.p_dem > 0)
 						{
-							max_p_dem = std::max(max_p_dem, b.p_dem + trans_price);
+							max_p_dem = std::max(max_p_dem, b.p_dem - trans_price);
 						}
 					}
 				}
@@ -221,7 +221,7 @@ namespace simciv
 				{
 					// a --> b
 					v_dem += dt;
-					m_dem += dt * (b.p_dem + trans_price);
+					m_dem += dt * (b.p_dem - trans_price);
 				}
 				else
 				{
