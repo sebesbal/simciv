@@ -133,7 +133,7 @@ namespace simciv
 		}
 	}
 
-	const double trans_rate = 1.1;
+	const double trans_rate = 1.0;
 
 	void WorldModel::end_turn_prod(int id)
 	{
@@ -152,13 +152,15 @@ namespace simciv
 				double dp = b.p - a.p;
 				double dv = b.v - a.v;
 
-				if (dp > trans_price2 && dv < 0)
+				if (dp > trans_price2)
 				{
-					r->t[id] += std::min(0.1 * (dp - trans_price2) * (-dv), 1.0);
+					r->t[id] += std::min(0.01 * (dp - trans_price2), 0.01);
+					// r->t[id] += 0.01 * (dp - trans_price2);
 				}
-				else if (dp < -trans_price2 && dv > 0)
+				else if (dp < -trans_price2)
 				{
-					r->t[id] += std::min(0.1 * (dp + trans_price2) * (dv), 1.0);
+					r->t[id] += std::max(0.01 * (dp + trans_price2), -0.01);
+					//r->t[id] += 0.01 * (dp + trans_price2);
 				}
 				else if (abs(dp) < trans_price && abs(dp) > trans_price)
 				{
