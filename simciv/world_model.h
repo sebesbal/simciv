@@ -9,12 +9,14 @@ namespace simciv
 
 	struct Area
 	{
-		Area(int pc);
+		Area(int index, int pc);
 		void get_trans(int id, double& x, double& y);
+		int index;
 		int x;
 		int y;
 		std::vector<Road*> _roads;
 		std::vector<AreaProd> _prod;
+		void* data; // data for algorithms
 	};
 
 	struct AreaProd
@@ -34,6 +36,13 @@ namespace simciv
 		double prod_v_sup;
 	};
 
+	struct Producer
+	{
+		Area* area;
+		double volume; // negative volume means consumer
+		double price;
+	};
+
 	struct Road
 	{
 		Road(int pc, double t_price);
@@ -44,6 +53,14 @@ namespace simciv
 		Area* other(Area* a) { return a == this->a ? b : this->a; }
 	}; 
 
+	struct Route
+	{
+		std::vector<Road*> roads;
+		double volume;
+		double price;
+		double t_price;
+		double profit;
+	};
 
 	class WorldModel
 	{
@@ -52,12 +69,12 @@ namespace simciv
 		const std::vector<Road*>& roads() { return _roads; }
 		const std::vector<Area*>& areas() { return _areas; }
 		void end_turn();
-		void end_turn_prod(int id);
-		void add_supply(Area* area, int prod_id, double volume, double price);
+		virtual void add_supply(Area* area, int prod_id, double volume, double price) = 0;
 		Area* get_area(int x, int y);
 		int width() { return _width; }
 		int height() { return _height; }
 	protected:
+		virtual void end_turn_prod(int id) = 0;
 		std::vector<Road*> _roads;
 		std::vector<Area*> _areas;
 		int _pc; ///< Product count
@@ -66,5 +83,45 @@ namespace simciv
 		void add_road(Area* a, Area* b);
 	};
 
+	/// Cellular automaton
+	class World1: public WorldModel
+	{
+	public:
+		virtual void add_supply(Area* area, int prod_id, double volume, double price) override;
+	protected:
+		virtual void end_turn_prod(int id) override;
+	};
 
+	/// Producer-consumer pairs
+	class World2: public WorldModel
+	{
+	public:
+		virtual void add_supply(Area* area, int prod_id, double volume, double price) override;
+	protected:
+		struct Node
+		{
+			Node(): area(NULL), parent(NULL), color(0), d(0) {}
+			Road* parent;
+			Area* area;
+			double d;
+			int color; // 0 = black, unvisited, 1 = gray, opened, 2 = white, visited
+		};
+		
+		class NodeComparator
+		{
+		public:
+			bool operator()(const Node* a, const Node* b)
+			{
+				return (a->d > b->d);
+			}
+		};
+
+		virtual void end_turn_prod(int id) override;
+		void get_distances(Node* src, Node* g);
+		Route* get_route(Node* src, Node* dst, Node* g);
+		void update_routes();
+		std::vector<Producer*> _producers;
+		std::vector<Producer*> _consumers;
+		std::vector<Route*> _routes; // "all" possible routes. volume > 0 means that the route is used
+	};
 }

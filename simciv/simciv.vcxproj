@@ -57,7 +57,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(Dev)cocos2d-x-3.2\build\Release.win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Dev)cocos2d-x-3.2\build\Debug.win32</AdditionalLibraryDirectories>
       <AdditionalDependencies>libExtensions.lib;libcocos2d.lib;libchipmunk.lib;opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;glfw3.lib;freetype250.lib;winmm.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;libgui.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

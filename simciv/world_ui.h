@@ -37,7 +37,7 @@ protected:
 	static const int cs = 50; // cell size
 	cocos2d::Node* _items;
 	cocos2d::Node* _map;
-	WorldModel _model;
+	World1 _model;
 	ItemType _mode;
 	CustomCommand _customCommand;
     void onDraw(const Mat4 &transform, uint32_t flags);

@@ -1,11 +1,12 @@
 
 #include "world_model.h"
+#include <queue>
 
 namespace simciv
 {
 	//const double trans_price = 1.0;
 
-	Area::Area(int pc)
+	Area::Area(int pc, int index): index(index)
 	{
 		for (int i = 0; i < pc; ++i)
 		{
@@ -64,7 +65,7 @@ namespace simciv
 		{
 			for (int x = 0; x < width; ++x)
 			{
-				Area* a = new Area(_pc);
+				Area* a = new Area(_pc, _areas.size());
 				a->x = x;
 				a->y = y;
 				_areas.push_back(a);
@@ -135,7 +136,12 @@ namespace simciv
 
 	const double trans_rate = 1.0;
 
-	void WorldModel::end_turn_prod(int id)
+	Area* WorldModel::get_area(int x, int y)
+	{
+		return _areas[y * _width + x];
+	}
+
+	void World1::end_turn_prod(int id)
 	{
 		// modify transport
 		int n = 5;
@@ -289,7 +295,7 @@ namespace simciv
 		}
 	}
 
-	void WorldModel::add_supply(Area* area, int prod_id, double volume, double price)
+	void World1::add_supply(Area* area, int prod_id, double volume, double price)
 	{
 		AreaProd& a = area->_prod[prod_id];
 		if (volume < 0)
@@ -308,8 +314,111 @@ namespace simciv
 		
 	}
 
-	Area* WorldModel::get_area(int x, int y)
+	void World2::end_turn_prod(int id)
 	{
-		return _areas[y * _width + x];
+
+	}
+
+	void World2::get_distances(Node* src, Node* g)
+	{
+		int nn = _areas.size();
+
+		for (int i = 0; i < nn; ++i)
+		{
+			g[i].color = 0;
+			g[i].d = std::numeric_limits<double>::max();
+		}
+
+		std::priority_queue<Node*, std::vector<Node*>, NodeComparator> Q;
+		src->color = 1;
+		Q.push(src);
+
+		while (Q.size() > 0)
+		{
+			Node* n = Q.top();
+			Q.pop();
+			n->color = 2;
+			Area* a = n->area;
+
+			for (Road* r: a->_roads)
+			{
+				Area* b = r->other(a);
+				Node* m = static_cast<Node*>(b->data);
+				if (m->color < 2) // if m is not visited yet
+				{
+					double new_d = n->d + r->t_price;
+					if (new_d < m->d)
+					{
+						m->d = new_d;
+						m->parent = r;
+						if (m->color != 1) // if m is not in the queue
+						{
+							m->color = 1;
+							Q.push(m);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	Route* World2::get_route(Node* src, Node* dst, Node* g)
+	{
+		return NULL;
+	}
+
+	void World2::update_routes()
+	{
+		int n = _areas.size();
+		Node* g = new Node[n];
+		for (int i = 0; i < n; ++i)
+		{
+			Area* a = _areas[i];
+			g->area = a;
+			a->data = g;
+		}
+
+		for (Route* r: _routes)
+		{
+			delete r;
+		}
+		_routes.clear();
+
+		for (Producer* p: _producers)
+		{
+			Node& m = g[p->area->index];
+			get_distances(&m, g);
+			for (Producer* q: _consumers)
+			{
+				Node& o = g[q->area->index];
+				Route* r = get_route(&m, &o, g);
+				_routes.push_back(r);
+			}
+		}
+
+		delete g;
+	}
+
+	void World2::add_supply(Area* area, int prod_id, double volume, double price)
+	{
+		AreaProd& a = area->_prod[prod_id];
+		Producer* p = new Producer();
+		p->price = price;
+		p->volume = volume;
+		if (volume < 0)
+		{
+			// consumer
+			_consumers.push_back(p);
+			volume = -volume;
+			a.p_dem = a.prod_p_dem = price;
+			a.prod_v_dem += volume;
+		}
+		else
+		{
+			// producer
+			_producers.push_back(p);
+			a.p_sup = a.prod_p_sup = price;
+			a.prod_v_sup += volume;
+		}
 	}
 }
