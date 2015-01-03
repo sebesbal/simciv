@@ -314,9 +314,22 @@ namespace simciv
 		
 	}
 
+	void World2::end_turn()
+	{
+		for (int i = 0; i < _pc; ++i)
+		{
+			end_turn_prod(i);
+		}
+	}
+
 	void World2::end_turn_prod(int id)
 	{
-
+		static int k = 0;
+		if (k++ % 20 == 0)
+		{
+			update_routes();
+			routes_to_areas();
+		}
 	}
 
 	void World2::get_distances(Node* src, Node* g)
@@ -325,25 +338,41 @@ namespace simciv
 
 		for (int i = 0; i < nn; ++i)
 		{
-			g[i].color = 0;
-			g[i].d = std::numeric_limits<double>::max();
+			Node& n = g[i];
+			n.color = 0;
+			n.d = std::numeric_limits<double>::max();
+			n.parent = NULL;
 		}
 
-		std::priority_queue<Node*, std::vector<Node*>, NodeComparator> Q;
+		// std::priority_queue<Node*, std::vector<Node*>, NodeComparator> Q;
+		std::vector<Node*> Q;
 		src->color = 1;
-		Q.push(src);
+		src->d = 0;
+
+		// Q.push(src);
+		Q.push_back(src);
+		std::push_heap(Q.begin(), Q.end());
+
+		auto pr = [](Node* a, Node* b) {
+			return a->d > b->d;
+		};
 
 		while (Q.size() > 0)
 		{
-			Node* n = Q.top();
-			Q.pop();
+			//Node* n = Q.top();
+			//Q.pop();
+
+			Node* n = Q.front();
+			std::pop_heap(Q.begin(), Q.end(), pr);
+			Q.pop_back();
+
 			n->color = 2;
 			Area* a = n->area;
 
 			for (Road* r: a->_roads)
 			{
 				Area* b = r->other(a);
-				Node* m = static_cast<Node*>(b->data);
+				Node* m = &g[b->index];
 				if (m->color < 2) // if m is not visited yet
 				{
 					double new_d = n->d + r->t_price;
@@ -351,10 +380,17 @@ namespace simciv
 					{
 						m->d = new_d;
 						m->parent = r;
-						if (m->color != 1) // if m is not in the queue
+						if (m->color == 0)
 						{
 							m->color = 1;
-							Q.push(m);
+							//Q.push(m);
+
+							Q.push_back(m);
+							std::push_heap(Q.begin(), Q.end(), pr);
+						}
+						else
+						{
+							std::make_heap(Q.begin(), Q.end(), pr);
 						}
 					}
 				}
@@ -364,7 +400,30 @@ namespace simciv
 
 	Route* World2::get_route(Node* src, Node* dst, Node* g)
 	{
-		return NULL;
+		Route* route = new Route();
+		Area* a = dst->area;
+		route->trans_price = 0;
+		//route->p_dem = a->_prod[0].p;
+		//route->dem = dst;
+
+		while (dst->parent)
+		{
+			Road* r = dst->parent;
+			route->roads.push_back(r);
+			route->trans_price += r->t_price;
+			a = r->other(a);
+			dst = &g[a->index];
+		}
+
+		//route->sup = a;
+		//route->p_sup = a->_prod[0].p;
+		auto& v = route->roads;
+		std::reverse(v.begin(), v.end());
+
+		//route->profit = route->p_dem - route->p_sup - route->trans_price;
+		route->volume = 0;
+
+		return route;
 	}
 
 	void World2::update_routes()
@@ -374,8 +433,7 @@ namespace simciv
 		for (int i = 0; i < n; ++i)
 		{
 			Area* a = _areas[i];
-			g->area = a;
-			a->data = g;
+			g[i].area = a;
 		}
 
 		for (Route* r: _routes)
@@ -392,11 +450,63 @@ namespace simciv
 			{
 				Node& o = g[q->area->index];
 				Route* r = get_route(&m, &o, g);
+				r->dem = q;
+				r->sup = p;
+				r->profit = q->price - p->price - r->trans_price;
 				_routes.push_back(r);
 			}
 		}
 
+		for (Producer* p: _producers)
+		{
+			p->free_volume = p->volume;
+		}
+		for (Producer* p: _consumers)
+		{
+			p->free_volume = - p->volume;
+		}
+
+		std::sort(_routes.begin(), _routes.end(), [](Route* a, Route* b) {
+			return a->profit > b->profit;
+		});
+
+		for (Route* r: _routes)
+		{
+			double& v_sup = r->sup->free_volume;
+			double& v_dem = r->dem->free_volume;
+			double v = std::min(v_sup, v_dem);
+			v_sup -= v;
+			v_dem -= v;
+			r->volume = v;
+		}
+
 		delete g;
+	}
+
+	void World2::routes_to_areas()
+	{
+		for (Road* r: _roads)
+		{
+			r->t[0] = 0;
+		}
+
+		for (Route* route: _routes)
+		{
+			Area* a = route->sup->area;
+			for (Road* r: route->roads)
+			{
+				Area* b = r->other(a);
+				if (a == r->a)
+				{
+					r->t[0] += route->volume;
+				}
+				else
+				{
+					r->t[0] -= route->volume;
+				}
+				a = b;
+			}
+		}
 	}
 
 	void World2::add_supply(Area* area, int prod_id, double volume, double price)
@@ -405,6 +515,7 @@ namespace simciv
 		Producer* p = new Producer();
 		p->price = price;
 		p->volume = volume;
+		p->area = area;
 		if (volume < 0)
 		{
 			// consumer

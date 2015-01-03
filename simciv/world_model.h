@@ -16,7 +16,6 @@ namespace simciv
 		int y;
 		std::vector<Road*> _roads;
 		std::vector<AreaProd> _prod;
-		void* data; // data for algorithms
 	};
 
 	struct AreaProd
@@ -40,6 +39,7 @@ namespace simciv
 	{
 		Area* area;
 		double volume; // negative volume means consumer
+		double free_volume;
 		double price;
 	};
 
@@ -55,10 +55,13 @@ namespace simciv
 
 	struct Route
 	{
+		Producer* sup;
+		Producer* dem;
 		std::vector<Road*> roads;
 		double volume;
-		double price;
-		double t_price;
+		//double p_sup;
+		//double p_dem;
+		double trans_price;
 		double profit;
 	};
 
@@ -68,7 +71,7 @@ namespace simciv
 		void create_map(int width, int height, int prod_count);
 		const std::vector<Road*>& roads() { return _roads; }
 		const std::vector<Area*>& areas() { return _areas; }
-		void end_turn();
+		virtual void end_turn();
 		virtual void add_supply(Area* area, int prod_id, double volume, double price) = 0;
 		Area* get_area(int x, int y);
 		int width() { return _width; }
@@ -97,6 +100,7 @@ namespace simciv
 	{
 	public:
 		virtual void add_supply(Area* area, int prod_id, double volume, double price) override;
+		virtual void end_turn() override;
 	protected:
 		struct Node
 		{
@@ -115,11 +119,12 @@ namespace simciv
 				return (a->d > b->d);
 			}
 		};
-
+		
 		virtual void end_turn_prod(int id) override;
 		void get_distances(Node* src, Node* g);
 		Route* get_route(Node* src, Node* dst, Node* g);
 		void update_routes();
+		void routes_to_areas();
 		std::vector<Producer*> _producers;
 		std::vector<Producer*> _consumers;
 		std::vector<Route*> _routes; // "all" possible routes. volume > 0 means that the route is used
