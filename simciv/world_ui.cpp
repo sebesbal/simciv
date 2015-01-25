@@ -279,7 +279,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			double v = p.p;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
-			double vol = p.v_dem + p.v_sup;
+			double vol = p.v_con + p.v_sup;
 			min_vol = std::min(min_vol, vol);
 			max_vol = std::max(max_vol, vol);
 		}
@@ -291,7 +291,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			auto& p = _model.get_prod(a, 0);
 			double v = p.p;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			double vol = p.v_dem + p.v_sup;
+			double vol = p.v_con + p.v_sup;
 			draw_rect(a->x, a->y, r, vol / d_vol);
 		}
 	}

@@ -17,13 +17,13 @@ const double max_price = 100000000000;
 
 struct Area
 {
-	Area(): p(-1), p_dem(0), p_sup(max_price), v_dem(0), v_sup(0), prod_p_dem(0), prod_v_dem(0), prod_p_sup(max_price), prod_v_sup(0), v(0) { }
+	Area(): p(-1), p_con(0), p_sup(max_price), v_con(0), v_sup(0), prod_p_dem(0), prod_v_dem(0), prod_p_sup(max_price), prod_v_sup(0), v(0) { }
 
 	double p;
-	double p_dem; // price demand
+	double p_con; // price demand
 	double p_sup; // supply
 
-	double v_dem; // volume
+	double v_con; // volume
 	double v_sup;
 	double v;
 
@@ -78,7 +78,7 @@ public:
 		}
 
 		Area* a = get_area(2, 5);
-		a->p_dem = a->prod_p_dem = 100;
+		a->p_con = a->prod_p_dem = 100;
 		a->prod_v_dem = 100;
 
 		a = get_area(2, 8);
@@ -90,7 +90,7 @@ public:
 		a->prod_v_sup = 120;
 
 		a = get_area(4, 2);
-		a->p_dem = a->prod_p_dem = 100;
+		a->p_con = a->prod_p_dem = 100;
 		a->prod_v_dem = 100;
 	}
 	~World()
@@ -146,24 +146,24 @@ private:
 		add_road(b, a);
 	}
 
-	double price(double p_sup, double v_sup, double p_dem, double v_dem)
+	double price(double p_sup, double v_sup, double p_con, double v_con)
 	{
-		double v = v_sup + v_dem;
-		if (p_sup == max_price || p_dem == 0)
+		double v = v_sup + v_con;
+		if (p_sup == max_price || p_con == 0)
 		{
 			return -1;
 		}
 		else if (v == 0)
 		{
-			return (p_sup + p_dem) / 2;
+			return (p_sup + p_con) / 2;
 		}
 		else
 		{
-			double x = v_dem / v - 0.5;
+			double x = v_con / v - 0.5;
 			double k = 6; // if the k is bigger, the sigmoid is "sharper"
 			double d = tanh(k * x);
 			double alpha = (d + 1) / 2;
-			return alpha * p_dem + (1 - alpha) * p_sup;
+			return alpha * p_con + (1 - alpha) * p_sup;
 		}
 	}
 
@@ -195,7 +195,7 @@ private:
 		for (Area* a: _areas)
 		{
 			double v_sup = 0;
-			double v_dem = 0;
+			double v_con = 0;
 			double m_sup = 0; // money
 			double m_dem = 0;
 			double min_p_sup = a->prod_p_sup;
@@ -213,19 +213,19 @@ private:
 					{
 						min_p_sup = min(min_p_sup, b->p_sup + trans_price);
 					}
-					if (v_dem == 0)
+					if (v_con == 0)
 					{
-						if (b->p_dem > 0)
+						if (b->p_con > 0)
 						{
-							max_p_dem = max(max_p_dem, b->p_dem + trans_price);
+							max_p_dem = max(max_p_dem, b->p_con + trans_price);
 						}
 					}
 				}
 				else if (!(t > 0 ^ r->a == a))
 				{
 					// a --> b
-					v_dem += dt;
-					m_dem += dt * (b->p_dem + trans_price);
+					v_con += dt;
+					m_dem += dt * (b->p_con + trans_price);
 				}
 				else
 				{
@@ -238,7 +238,7 @@ private:
 			v_sup += a->prod_v_sup;
 			m_sup += a->prod_v_sup * a->prod_p_sup;
 
-			v_dem += a->prod_v_dem;
+			v_con += a->prod_v_dem;
 			m_dem += a->prod_v_dem * a->prod_p_dem;
 
 
@@ -256,27 +256,27 @@ private:
 				a->p_sup = (1 - beta) * a->p_sup + beta * m_sup / v_sup;
 			}
 
-			a->v = v_sup + v_dem;
+			a->v = v_sup + v_con;
 
 			// modify dem price
-			if (v_dem == 0)
+			if (v_con == 0)
 			{
-				if (a->p_dem == 0)
+				if (a->p_con == 0)
 				{
-					a->p_dem = max_p_dem;
+					a->p_con = max_p_dem;
 				}
 				else
 				{
-					a->p_dem *= (1 - beta);
+					a->p_con *= (1 - beta);
 				}
 			}
 			else
 			{
-				a->p_dem = (1 - beta) * a->p_dem + beta * m_dem / v_dem;
+				a->p_con = (1 - beta) * a->p_con + beta * m_dem / v_con;
 			}
 
 			// modify price
-			double new_p = price(a->p_sup, v_sup, a->p_dem, v_dem);
+			double new_p = price(a->p_sup, v_sup, a->p_con, v_con);
 			double alpha = 0.1;
 			a->p = (1 - alpha) * a->p + alpha * new_p;
 		}
@@ -324,8 +324,8 @@ private:
 			GD.point(2, scale * a->x, scale * a->y, price_to_color(a->p_sup), 3, step);
 			if (text) GD.textnum(2, scale * a->x, scale * a->y + 5, c, a->p_sup, step);
 
-			GD.point(3, scale * a->x, scale * a->y, price_to_color(a->p_dem), 3, step);
-			if (text) GD.textnum(3, scale * a->x, scale * a->y + 5, c, a->p_dem, step);
+			GD.point(3, scale * a->x, scale * a->y, price_to_color(a->p_con), 3, step);
+			if (text) GD.textnum(3, scale * a->x, scale * a->y + 5, c, a->p_con, step);
 
 			double vx = 0;
 			double vy = 0;

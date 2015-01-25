@@ -5,6 +5,7 @@ namespace simciv
 {
 	struct Road;
 	struct AreaProd;
+	struct Producer;
 	const double max_price = 100000000000;
 
 	struct Area
@@ -15,6 +16,8 @@ namespace simciv
 		int x;
 		int y;
 		std::vector<Road*> _roads;
+		std::vector<Producer*> supplies;
+		std::vector<Producer*> consumers;
 		//std::vector<AreaProd> _prod;
 	};
 
@@ -22,17 +25,15 @@ namespace simciv
 	{
 		AreaProd();
 		double p;
-		double p_dem; // price demand
+		double p_con; // price demand
 		double p_sup; // supply
 
-		double v_dem; // volume demand
+		double v_con; // volume demand
 		double v_sup; // volume supply
 		double v;
 
-		double prod_p_dem; // production
-		double prod_v_dem;
-		double prod_p_sup;
-		double prod_v_sup;
+		double m_con; // the profit of the consumer's worst deals in this area
+		double m_sup; // the profit of the suppliers's worst deals in this area
 	};
 
 	struct Producer
@@ -40,7 +41,8 @@ namespace simciv
 		Area* area;
 		double volume; // negative volume means consumer
 		double free_volume;
-		double price;
+		double price; // the current price
+		double profit; // the worst profit of the producers deals
 	};
 
 	struct Road
@@ -60,7 +62,7 @@ namespace simciv
 		std::vector<Road*> roads;
 		double volume;
 		//double p_sup;
-		//double p_dem;
+		//double p_con;
 		double trans_price;
 		double profit;
 	};
@@ -78,6 +80,7 @@ namespace simciv
 		int width() { return _width; }
 		int height() { return _height; }
 		AreaProd& get_prod(Area* a, int id);
+		AreaProd& get_new_prod(Area* a, int id);
 	protected:
 		
 		virtual void end_turn_prod(int id) = 0;
@@ -89,15 +92,6 @@ namespace simciv
 		int _width;
 		int _height;
 		void add_road(Area* a, Area* b);
-	};
-
-	/// Cellular automaton
-	class World1: public WorldModel
-	{
-	public:
-		virtual void add_supply(Area* area, int prod_id, double volume, double price) override;
-	protected:
-		virtual void end_turn_prod(int id) override;
 	};
 
 	/// Producer-consumer pairs
@@ -131,7 +125,7 @@ namespace simciv
 		void update_routes();
 		void routes_to_areas();
 		void update_prices();
-		std::vector<Producer*> _producers;
+		std::vector<Producer*> _supplies;
 		std::vector<Producer*> _consumers;
 		std::vector<Route*> _routes; // "all" possible routes. volume > 0 means that the route is used
 	};
