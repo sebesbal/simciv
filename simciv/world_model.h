@@ -15,7 +15,7 @@ namespace simciv
 		int x;
 		int y;
 		std::vector<Road*> _roads;
-		std::vector<AreaProd> _prod;
+		//std::vector<AreaProd> _prod;
 	};
 
 	struct AreaProd
@@ -68,6 +68,7 @@ namespace simciv
 	class WorldModel
 	{
 	public:
+		WorldModel();
 		void create_map(int width, int height, int prod_count);
 		const std::vector<Road*>& roads() { return _roads; }
 		const std::vector<Area*>& areas() { return _areas; }
@@ -76,10 +77,14 @@ namespace simciv
 		Area* get_area(int x, int y);
 		int width() { return _width; }
 		int height() { return _height; }
+		AreaProd& get_prod(Area* a, int id);
 	protected:
+		
 		virtual void end_turn_prod(int id) = 0;
 		std::vector<Road*> _roads;
 		std::vector<Area*> _areas;
+		std::vector<std::vector<AreaProd>>* _production;
+		std::vector<std::vector<AreaProd>>* _new_production;
 		int _pc; ///< Product count
 		int _width;
 		int _height;
@@ -125,6 +130,7 @@ namespace simciv
 		Route* get_route(Node* src, Node* dst, Node* g);
 		void update_routes();
 		void routes_to_areas();
+		void update_prices();
 		std::vector<Producer*> _producers;
 		std::vector<Producer*> _consumers;
 		std::vector<Route*> _routes; // "all" possible routes. volume > 0 means that the route is used

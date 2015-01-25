@@ -2,16 +2,18 @@
 #include "world_model.h"
 #include <queue>
 
+using namespace std;
+
 namespace simciv
 {
 	//const double trans_price = 1.0;
 
 	Area::Area(int pc, int index): index(index)
 	{
-		for (int i = 0; i < pc; ++i)
-		{
-			_prod.push_back(AreaProd());
-		}
+		//for (int i = 0; i < pc; ++i)
+		//{
+		//	_prod.push_back(AreaProd());
+		//}
 	}
 
 	void Area::get_trans(int id, double& x, double& y)
@@ -56,6 +58,11 @@ namespace simciv
 		}
 	}
 
+	WorldModel::WorldModel(): _production(new vector<std::vector<AreaProd>>()), _new_production(new vector<std::vector<AreaProd>>())
+	{
+
+	}
+
 	void WorldModel::create_map(int width, int height, int prod_count)
 	{
 		_width = width;
@@ -69,6 +76,13 @@ namespace simciv
 				a->x = x;
 				a->y = y;
 				_areas.push_back(a);
+
+				std::vector<AreaProd> p;
+				for (int i = 0; i < _pc; ++i)
+				{
+					p.push_back(AreaProd());
+				}
+				_production->push_back(p);
 
 				if (x > 0)
 				{
@@ -141,6 +155,11 @@ namespace simciv
 		return _areas[y * _width + x];
 	}
 
+	AreaProd& WorldModel::get_prod(Area* a, int id)
+	{
+		return (*_production)[a->index][id];
+	}
+
 	void World1::end_turn_prod(int id)
 	{
 		// modify transport
@@ -151,8 +170,8 @@ namespace simciv
 			double trans_price = r->t_price;
 			double trans_price2 = trans_rate * trans_price;
 
-			AreaProd& a = r->a->_prod[id];
-			AreaProd& b = r->b->_prod[id];
+			AreaProd& a = get_prod(r->a, id);
+			AreaProd& b = get_prod(r->b, id);
 			if (a.p > 0 && b.p > 0)
 			{
 				double dp = b.p - a.p;
@@ -192,7 +211,7 @@ namespace simciv
 		//for (int i = 0; i < 5; ++i)
 		for (Area* area: _areas)
 		{
-			AreaProd& a = area->_prod[id];
+			AreaProd& a = get_prod(area, id);
 			double v_sup = 0;
 			double v_dem = 0;
 			double m_sup = 0; // money
@@ -205,7 +224,7 @@ namespace simciv
 			{
 				double trans_price = trans_rate * r->t_price;
 				Area* area_b = r->other(area);
-				AreaProd& b = area_b->_prod[id];
+				AreaProd& b = get_prod(area_b, id);
 				sum_p += b.p;
 
 				double t = r->t[id];
@@ -297,7 +316,7 @@ namespace simciv
 
 	void World1::add_supply(Area* area, int prod_id, double volume, double price)
 	{
-		AreaProd& a = area->_prod[prod_id];
+		AreaProd& a = get_prod(area, prod_id);
 		if (volume < 0)
 		{
 			volume = -volume;
@@ -344,12 +363,10 @@ namespace simciv
 			n.parent = NULL;
 		}
 
-		// std::priority_queue<Node*, std::vector<Node*>, NodeComparator> Q;
 		std::vector<Node*> Q;
 		src->color = 1;
 		src->d = 0;
 
-		// Q.push(src);
 		Q.push_back(src);
 		std::push_heap(Q.begin(), Q.end());
 
@@ -359,9 +376,6 @@ namespace simciv
 
 		while (Q.size() > 0)
 		{
-			//Node* n = Q.top();
-			//Q.pop();
-
 			Node* n = Q.front();
 			std::pop_heap(Q.begin(), Q.end(), pr);
 			Q.pop_back();
@@ -383,8 +397,6 @@ namespace simciv
 						if (m->color == 0)
 						{
 							m->color = 1;
-							//Q.push(m);
-
 							Q.push_back(m);
 							std::push_heap(Q.begin(), Q.end(), pr);
 						}
@@ -452,7 +464,7 @@ namespace simciv
 				Route* r = get_route(&m, &o, g);
 				r->dem = q;
 				r->sup = p;
-				r->profit = q->price - p->price - r->trans_price;
+				r->profit = (q->price - p->price - r->trans_price) / r->trans_price;
 				_routes.push_back(r);
 			}
 		}
@@ -509,9 +521,23 @@ namespace simciv
 		}
 	}
 
+	void World2::update_prices()
+	{
+		for (Area* a: _areas)
+		{
+			for (Road* r: a->_roads)
+			{
+				Area* b = r->other(a);
+
+			}
+			auto& p = get_prod(a, 0);
+
+		}
+	}
+
 	void World2::add_supply(Area* area, int prod_id, double volume, double price)
 	{
-		AreaProd& a = area->_prod[prod_id];
+		AreaProd& a = get_prod(area, prod_id);
 		Producer* p = new Producer();
 		p->price = price;
 		p->volume = volume;

@@ -275,10 +275,11 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 	{
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].p;
+			auto& p = _model.get_prod(a, 0);
+			double v = p.p;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
-			double vol = a->_prod[0].v_dem + a->_prod[0].v_sup;
+			double vol = p.v_dem + p.v_sup;
 			min_vol = std::min(min_vol, vol);
 			max_vol = std::max(max_vol, vol);
 		}
@@ -287,9 +288,10 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].p;
+			auto& p = _model.get_prod(a, 0);
+			double v = p.p;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			double vol = a->_prod[0].v_dem + a->_prod[0].v_sup;
+			double vol = p.v_dem + p.v_sup;
 			draw_rect(a->x, a->y, r, vol / d_vol);
 		}
 	}
@@ -298,7 +300,8 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 	{
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].v;
+			auto& p = _model.get_prod(a, 0);
+			double v = p.v;
 			min_v = std::min(min_v, v);
 			max_v = std::max(max_v, v);
 		}
@@ -306,7 +309,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 		for (Area* a: _model.areas())
 		{
-			double v = a->_prod[0].v;
+			double v = _model.get_prod(a, 0).v;
 			double r = d == 0 ? 0.5 : (v - min_v) / d;
 			draw_rect(a->x, a->y, r, 0.5);
 		}
