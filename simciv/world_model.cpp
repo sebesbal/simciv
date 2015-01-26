@@ -1,6 +1,7 @@
 
 #include "world_model.h"
 #include <queue>
+#include "economy.h"
 
 using namespace std;
 
@@ -35,17 +36,6 @@ namespace simciv
 		y = vy;
 	}
 
-	AreaProd::AreaProd(): 
-		p(-1),
-		p_con(max_price),
-		p_sup(0),
-		v_con(0),
-		v_sup(0),
-		v(0)
-	{
-
-	}
-
 	Road::Road(int pc, double t_price): t_price(t_price)
 	{
 		for (int i = 0; i < pc; ++i)
@@ -54,7 +44,7 @@ namespace simciv
 		}
 	}
 
-	WorldModel::WorldModel(): _production(new vector<std::vector<AreaProd>>()), _new_production(new vector<std::vector<AreaProd>>())
+	WorldModel::WorldModel()
 	{
 
 	}
@@ -73,13 +63,13 @@ namespace simciv
 				a->y = y;
 				_areas.push_back(a);
 
-				std::vector<AreaProd> p;
-				for (int i = 0; i < _pc; ++i)
-				{
-					p.push_back(AreaProd());
-				}
-				_production->push_back(p);
-				_new_production->push_back(p);
+				//std::vector<AreaProd> p;
+				//for (int i = 0; i < _pc; ++i)
+				//{
+				//	p.push_back(AreaProd());
+				//}
+				//_production->push_back(p);
+				//_new_production->push_back(p);
 
 				if (x > 0)
 				{
@@ -99,6 +89,11 @@ namespace simciv
 				}
 			}
 		}
+
+		for (int i = 0; i < prod_count; ++i)
+		{
+			_products.push_back( new ProductMap(*this) );
+		}
 	}
 
 	void WorldModel::add_road(Area* a, Area* b)
@@ -110,17 +105,6 @@ namespace simciv
 		_roads.push_back(r);
 		a->_roads.push_back(r);
 		b->_roads.push_back(r);
-	}
-	
-	void WorldModel::end_turn()
-	{
-		for (int k = 0; k < 10; ++k)
-		{
-			for (int i = 0; i < _pc; ++i)
-			{
-				end_turn_prod(i);
-			}
-		}
 	}
 	
 	double price(double p_sup, double v_sup, double p_con, double v_con)
@@ -154,34 +138,23 @@ namespace simciv
 
 	AreaProd& WorldModel::get_prod(Area* a, int id)
 	{
-		return (*_production)[a->index][id];
+		return _products[id]->get_prod(a);
+		//return (*_production)[a->index][id];
 	}
 
-	AreaProd& WorldModel::get_new_prod(Area* a, int id)
-	{
-		return (*_new_production)[a->index][id];
-	}
-
-	void World2::end_turn()
-	{
-		for (int i = 0; i < _pc; ++i)
-		{
-			end_turn_prod(i);
-		}
-	}
-
-	void World2::end_turn_prod(int id)
+	void WorldModel::end_turn()
 	{
 		static int k = 0;
 		if (k++ % 1 == 0)
 		{
-			update_routes();
-			routes_to_areas();
-			update_prices();
+			for (ProductMap* product: _products)
+			{
+				product->update();
+			} 
 		}
 	}
 
-	void World2::get_distances(Node* src, Node* g)
+	void WorldModel::get_distances(Node* src, Node* g)
 	{
 		int nn = _areas.size();
 
@@ -240,7 +213,7 @@ namespace simciv
 		}
 	}
 
-	Route* World2::get_route(Node* src, Node* dst, Node* g)
+	Route* WorldModel::get_route(Node* src, Node* dst, Node* g)
 	{
 		Route* route = new Route();
 		Area* a = dst->area;
@@ -263,175 +236,13 @@ namespace simciv
 		std::reverse(v.begin(), v.end());
 
 		//route->profit = route->p_con - route->p_sup - route->trans_price;
-		route->volume = 0;
+		//route->volume = 0;
 
 		return route;
 	}
 
-	void World2::update_routes()
+	void WorldModel::add_supply(Area* area, int prod_id, double volume, double price)
 	{
-		int n = _areas.size();
-		Node* g = new Node[n];
-		for (int i = 0; i < n; ++i)
-		{
-			Area* a = _areas[i];
-			g[i].area = a;
-		}
-
-		for (Route* r: _routes)
-		{
-			delete r;
-		}
-		_routes.clear();
-
-		for (Producer* p: _supplies)
-		{
-			Node& m = g[p->area->index];
-			get_distances(&m, g);
-			for (Producer* q: _consumers)
-			{
-				Node& o = g[q->area->index];
-				Route* r = get_route(&m, &o, g);
-				r->dem = q;
-				r->sup = p;
-				//r->profit = (q->price - p->price - r->trans_price) / r->trans_price;
-				r->profit = q->price - p->price - r->trans_price;
-				_routes.push_back(r);
-			}
-		}
-
-		for (Producer* p: _supplies)
-		{
-			p->free_volume = p->volume;
-			p->profit = max_price;
-		}
-		for (Producer* p: _consumers)
-		{
-			p->free_volume = - p->volume;
-			p->profit = max_price;
-		}
-
-		std::sort(_routes.begin(), _routes.end(), [](Route* a, Route* b) {
-			return a->profit > b->profit;
-		});
-
-		for (Route* r: _routes)
-		{
-			double& v_sup = r->sup->free_volume;
-			double& v_con = r->dem->free_volume;
-			double v = std::min(v_sup, v_con);
-			if (v > 0)
-			{
-				v_sup -= v;
-				v_con -= v;
-				r->volume = v;
-				auto& sup = r->sup->profit;
-				sup = std::min(sup, r->profit);
-				auto& con = r->dem->profit;
-				con = std::min(con, r->profit);
-			}
-		}
-
-		for (Producer* p: _supplies)
-		{
-			p->partner_price = p->price + p->profit;
-		}
-		for (Producer* p: _consumers)
-		{
-			p->partner_price = std::max(0.0, p->price - p->profit);
-		}
-
-		delete g;
-	}
-
-	void World2::routes_to_areas()
-	{
-		for (Road* r: _roads)
-		{
-			r->t[0] = 0;
-		}
-
-		for (Route* route: _routes)
-		{
-			Area* a = route->sup->area;
-			for (Road* r: route->roads)
-			{
-				Area* b = r->other(a);
-				if (a == r->a)
-				{
-					r->t[0] += route->volume;
-				}
-				else
-				{
-					r->t[0] -= route->volume;
-				}
-				a = b;
-			}
-		}
-	}
-
-	void World2::update_prices()
-	{
-		for (Area* a: _areas)
-		{
-			auto& p = get_new_prod(a, 0);
-			double new_supply_price = 0; // the highest price in this area what can a supplier use (to sell the product).
-			auto& v = a->consumers;
-			if (v.size() > 0)
-			{
-				auto it = std::max_element(v.begin(), v.end(), [](Producer* a, Producer* b){ return a->partner_price < b->partner_price; });
-				new_supply_price = (*it)->partner_price;
-			}
-
-			for (Road* r: a->_roads)
-			{
-				Area* b = r->other(a);
-				auto& bp = get_prod(b, 0);
-				new_supply_price = std::max(new_supply_price, bp.p_sup - r->t_price);
-			}
-			p.p_sup = new_supply_price;
-
-			double new_cons_price = max_price; // the lowest price in this area what can a supplier use (to sell the product).
-			auto& u = a->supplies;
-			if (u.size() > 0)
-			{
-				auto it = std::min_element(u.begin(), u.end(), [](Producer* a, Producer* b){ return a->partner_price < b->partner_price; });
-				new_cons_price = (*it)->partner_price;
-			}
-
-			for (Road* r: a->_roads)
-			{
-				Area* b = r->other(a);
-				auto& bp = get_prod(b, 0);
-				new_cons_price = std::min(new_cons_price, bp.p_con + r->t_price);
-			}
-			p.p_con = new_cons_price;
-
-			p.p = (p.p_con + p.p_sup) / 2;
-		}
-
-		//*_production = *_new_production;
-		 std::swap(_production, _new_production);
-	}
-
-	void World2::add_supply(Area* area, int prod_id, double volume, double price)
-	{
-		AreaProd& a = get_prod(area, prod_id);
-		Producer* p = new Producer();
-		p->price = price;
-		p->volume = volume;
-		p->area = area;
-		if (volume < 0)
-		{
-			// consumer
-			_consumers.push_back(p);
-			area->consumers.push_back(p);
-		}
-		else
-		{
-			// producer
-			_supplies.push_back(p);
-			area->supplies.push_back(p);
-		}
+		_products[prod_id]->add_supply(area, volume, price);
 	}
 }

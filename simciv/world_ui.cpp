@@ -9,6 +9,7 @@
 #include "ui\UIButton.h"
 #include "base\ccTypes.h"
 #include <algorithm>
+#include "economy.h"
 
 namespace simciv
 {
