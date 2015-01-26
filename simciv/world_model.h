@@ -43,6 +43,7 @@ namespace simciv
 		double free_volume;
 		double price; // the current price
 		double profit; // the worst profit of the producers deals
+		double partner_price;
 	};
 
 	struct Road

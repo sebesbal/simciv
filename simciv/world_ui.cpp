@@ -273,47 +273,98 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 	if (_show_price)
 	{
-		for (Area* a: _model.areas())
+		if (!_show_supply && !_show_demand)
 		{
-			auto& p = _model.get_prod(a, 0);
-			double v = p.p;
-			min_v = std::min(min_v, v);
-			max_v = std::max(max_v, v);
-			double vol = p.v_con + p.v_sup;
-			min_vol = std::min(min_vol, vol);
-			max_vol = std::max(max_vol, vol);
-		}
-		double d = max_v - min_v;
-		double d_vol = max_vol - min_vol;
+			for (Area* a: _model.areas())
+			{
+				auto& p = _model.get_prod(a, 0);
+				double v = p.p;
+				min_v = std::min(min_v, v);
+				max_v = std::max(max_v, v);
+				double vol = p.v_con + p.v_sup;
+				min_vol = std::min(min_vol, vol);
+				max_vol = std::max(max_vol, vol);
+			}
+			double d = max_v - min_v;
+			double d_vol = max_vol - min_vol;
 
-		for (Area* a: _model.areas())
+			for (Area* a: _model.areas())
+			{
+				auto& p = _model.get_prod(a, 0);
+				double v = p.p;
+				double r = d == 0 ? 0.5 : (v - min_v) / d;
+				double vol = p.v_con + p.v_sup;
+				draw_rect(a->x, a->y, r, vol / d_vol);
+			}
+		}
+		else if (_show_supply)
 		{
-			auto& p = _model.get_prod(a, 0);
-			double v = p.p;
-			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			double vol = p.v_con + p.v_sup;
-			draw_rect(a->x, a->y, r, vol / d_vol);
+			for (Area* a: _model.areas())
+			{
+				auto& p = _model.get_prod(a, 0);
+				double v = p.p_sup;
+				min_v = std::min(min_v, v);
+				max_v = std::max(max_v, v);
+				double vol = p.v_sup;
+				min_vol = std::min(min_vol, vol);
+				max_vol = std::max(max_vol, vol);
+			}
+			double d = max_v - min_v;
+			double d_vol = max_vol - min_vol;
+
+			for (Area* a: _model.areas())
+			{
+				auto& p = _model.get_prod(a, 0);
+				double v = p.p_sup;
+				double r = d == 0 ? 0.5 : (v - min_v) / d;
+				double vol = p.v_sup;
+				draw_rect(a->x, a->y, r, vol / d_vol);
+			}
+		}
+		else if (_show_demand)
+		{
+			for (Area* a: _model.areas())
+			{
+				auto& p = _model.get_prod(a, 0);
+				double v = p.p_con;
+				min_v = std::min(min_v, v);
+				max_v = std::max(max_v, v);
+				double vol = p.v_con;
+				min_vol = std::min(min_vol, vol);
+				max_vol = std::max(max_vol, vol);
+			}
+			double d = max_v - min_v;
+			double d_vol = max_vol - min_vol;
+
+			for (Area* a: _model.areas())
+			{
+				auto& p = _model.get_prod(a, 0);
+				double v = p.p_con;
+				double r = d == 0 ? 0.5 : (v - min_v) / d;
+				double vol = p.v_con;
+				draw_rect(a->x, a->y, r, vol / d_vol);
+			}
 		}
 	}
 
-	if (_show_supply)
-	{
-		for (Area* a: _model.areas())
-		{
-			auto& p = _model.get_prod(a, 0);
-			double v = p.v;
-			min_v = std::min(min_v, v);
-			max_v = std::max(max_v, v);
-		}
-		double d = max_v - min_v;
+	//if (_show_supply)
+	//{
+	//	for (Area* a: _model.areas())
+	//	{
+	//		auto& p = _model.get_prod(a, 0);
+	//		double v = p.v;
+	//		min_v = std::min(min_v, v);
+	//		max_v = std::max(max_v, v);
+	//	}
+	//	double d = max_v - min_v;
 
-		for (Area* a: _model.areas())
-		{
-			double v = _model.get_prod(a, 0).v;
-			double r = d == 0 ? 0.5 : (v - min_v) / d;
-			draw_rect(a->x, a->y, r, 0.5);
-		}
-	}
+	//	for (Area* a: _model.areas())
+	//	{
+	//		double v = _model.get_prod(a, 0).v;
+	//		double r = d == 0 ? 0.5 : (v - min_v) / d;
+	//		draw_rect(a->x, a->y, r, 0.5);
+	//	}
+	//}
 
 	if (_show_transport)
 	{
