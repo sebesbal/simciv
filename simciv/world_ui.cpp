@@ -16,6 +16,13 @@ namespace simciv
 
 USING_NS_CC;
 
+std::string factory_strings[4] = {
+	"factory_red.png", "factory_blue.png", "factory_green.png", "factory_yellow.png"
+};
+
+std::string mine_strings[4] = {
+	"mine_red.png", "mine_blue.png", "mine_green.png", "mine_yellow.png"
+};
 
 Scene* WorldUI::scene()
 {
@@ -77,32 +84,47 @@ void WorldUI::init_menu()
 
 	auto s = Size(20, 20);
 	LinearLayoutParameter* p = LinearLayoutParameter::create();
-	p->setGravity(LinearLayoutParameter::LinearGravity::CENTER_HORIZONTAL);
+	p->setGravity(LinearLayoutParameter::LinearGravity::TOP);
 	p->setMargin(Margin(2, 2, 2, 2));
+	LinearLayoutParameter* q = LinearLayoutParameter::create();
+	q->setGravity(LinearLayoutParameter::LinearGravity::LEFT);
+	//q->setMargin(Margin(2, 2, 2, 2));
 
-	auto factory_button = Button::create("factory1.png", "factory1.png", "factory1.png");
-	factory_button->addTouchEventListener([this](Ref* w, Widget::TouchEventType e) {
-		_mode = IT_FACTORY;
-	});
+	for (int i = 0; i < 4; ++i)
+	{
+		auto hbox = HBox::create();
+		hbox->setLayoutParameter(q);
+
+		auto fs = factory_strings[i];
+		auto factory_button = Button::create(fs, fs, fs);
+		factory_button->addTouchEventListener([this, i](Ref* w, Widget::TouchEventType e) {
+			_product_id = i;
+			_mode = IT_FACTORY;
+		});
 		
-	factory_button->ignoreContentAdaptWithSize(false);
-	factory_button->setSize(s);
-	factory_button->setLayoutParameter(p);
-	right_menu->addChild(factory_button);
+		factory_button->ignoreContentAdaptWithSize(false);
+		factory_button->setSize(s);
+		factory_button->setLayoutParameter(p);
+		hbox->addChild(factory_button);
 
-	// auto mine_button = Button::create("mine2.png", "mine2.png", "mine2.png");
-	auto mine_button = Button::create("mine3.png", "mine3.png", "mine3.png");
-	mine_button->addTouchEventListener([this](Ref* w, Widget::TouchEventType e) {
-		_mode = IT_MINE;
-	});
-	mine_button->setSize(s);
-	mine_button->setLayoutParameter(p);
-	mine_button->ignoreContentAdaptWithSize(false);
-	right_menu->addChild(mine_button);
+		fs = mine_strings[i];
+		auto mine_button = Button::create(fs, fs, fs);
+		mine_button->addTouchEventListener([this, i](Ref* w, Widget::TouchEventType e) {
+			_product_id = i;
+			_mode = IT_MINE;
+		});
+		mine_button->setSize(s);
+		mine_button->setLayoutParameter(p);
+		mine_button->ignoreContentAdaptWithSize(false);
+		hbox->addChild(mine_button);
+		hbox->setSize(Size(50, 25));
+		right_menu->addChild(hbox);
+	}
+
 	this->addChild(right_menu);
-	right_menu->setAnchorPoint(Vec2(1, 1)); // doesn't have effect
-	right_menu->setPosition(Vec2(w - 13, h));
-
+	//right_menu->setAnchorPoint(Vec2(1, 1)); // doesn't have effect
+	//right_menu->setPosition(Vec2(w - 13, h));
+	right_menu->setPosition(Vec2(w - 50, h));
 
 	// left menu
 	// auto 
@@ -193,7 +215,7 @@ bool WorldUI::init()
     this->addChild(_map, 0, 0);
 	_map->setLocalZOrder(-1);
 
-	_model.create_map(_table.width / cs, _table.height / cs, 1);
+	_model.create_map(_table.width / cs, _table.height / cs, 4);
     
     //auto listener = EventListenerTouchAllAtOnce::create();
 	auto listener = EventListenerTouchOneByOne::create();
@@ -216,6 +238,8 @@ bool WorldUI::init()
 	//auto cb = [](float f) {};
 	// _draw_tiles.schedule(schedule_selector(WorldUI::tick), this, 0.1, kRepeatForever, 0, false);
 	this->schedule(schedule_selector(WorldUI::tick), 0.05, kRepeatForever, 0);
+
+	_product_id = 0;
 
 	add_item(IT_FACTORY, _table.width / 3, _table.height / 2);
 	add_item(IT_MINE, 2 * _table.width / 3, _table.height / 2);
@@ -278,7 +302,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		{
 			for (Area* a: _model.areas())
 			{
-				auto& p = _model.get_prod(a, 0);
+				auto& p = _model.get_prod(a, _product_id);
 				double v = p.p;
 				min_v = std::min(min_v, v);
 				max_v = std::max(max_v, v);
@@ -291,7 +315,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 			for (Area* a: _model.areas())
 			{
-				auto& p = _model.get_prod(a, 0);
+				auto& p = _model.get_prod(a, _product_id);
 				double v = p.p;
 				double r = d == 0 ? 0.5 : (v - min_v) / d;
 				double vol = p.v_con + p.v_sup;
@@ -302,7 +326,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		{
 			for (Area* a: _model.areas())
 			{
-				auto& p = _model.get_prod(a, 0);
+				auto& p = _model.get_prod(a, _product_id);
 				double v = p.p_sup;
 				min_v = std::min(min_v, v);
 				max_v = std::max(max_v, v);
@@ -315,7 +339,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 			for (Area* a: _model.areas())
 			{
-				auto& p = _model.get_prod(a, 0);
+				auto& p = _model.get_prod(a, _product_id);
 				double v = p.p_sup;
 				double r = d == 0 ? 0.5 : (v - min_v) / d;
 				double vol = p.v_sup;
@@ -326,7 +350,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		{
 			for (Area* a: _model.areas())
 			{
-				auto& p = _model.get_prod(a, 0);
+				auto& p = _model.get_prod(a, _product_id);
 				double v = p.p_con;
 				min_v = std::min(min_v, v);
 				max_v = std::max(max_v, v);
@@ -339,7 +363,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 
 			for (Area* a: _model.areas())
 			{
-				auto& p = _model.get_prod(a, 0);
+				auto& p = _model.get_prod(a, _product_id);
 				double v = p.p_con;
 				double r = d == 0 ? 0.5 : (v - min_v) / d;
 				double vol = p.v_con;
@@ -376,7 +400,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 		for (Area* a: _model.areas())
 		{
 			double x, y;
-			a->get_trans(0, x, y);
+			a->get_trans(_product_id, x, y);
 			Rect r = get_rect(a->x, a->y);
 			Vec2 p = Vec2(r.getMidX(), r.getMidY());
 			DrawPrimitives::drawLine(p, Vec2(p.x + scale * x, p.y + scale * y));
@@ -406,6 +430,7 @@ Rect WorldUI::get_rect(int x, int y)
 void WorldUI::tick(float f)
 {
 	_model.end_turn();
+	_model.products()[_product_id]->routes_to_areas(_product_id);
 }
 
 Item* WorldUI::add_item(ItemType type, int x, int y)
@@ -420,20 +445,20 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 	{
 	case simciv::IT_MINE:
 		{
-			auto mine1 = Sprite::create("mine3.png");
+			auto mine1 = Sprite::create(mine_strings[_product_id]);
 			mine1->setPosition(x, y);
 			mine1->setScale(0.05);
 			_items->addChild(mine1);
-			_model.add_supply(a, 0, 100, 10);
+			_model.add_supply(a, _product_id, 100, 10);
 		}
 		break;
 	case simciv::IT_FACTORY:
 		{
-			auto factory1 = Sprite::create("factory1.png");
+			auto factory1 = Sprite::create(factory_strings[_product_id]);
 			factory1->setPosition(x, y);
 			factory1->setScale(0.2);
 			_items->addChild(factory1);
-			_model.add_supply(a, 0, -100, 100);
+			_model.add_supply(a, _product_id, -100, 100);
 		}
 		break;
 	default:

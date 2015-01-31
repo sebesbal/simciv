@@ -35,6 +35,7 @@ public:
 	Item* add_item(ItemType type, int x, int y);
 protected:
 	static const int cs = 50; // cell size
+	int _product_id;
 	cocos2d::Node* _items;
 	cocos2d::Node* _map;
 	WorldModel _model;

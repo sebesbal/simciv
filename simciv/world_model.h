@@ -69,6 +69,7 @@ namespace simciv
 		AreaProd& get_prod(Area* a, int id);
 		void get_distances(Node* src, Node* g);
 		Route* get_route(Node* src, Node* dst, Node* g);
+		std::vector<ProductMap*>& products() { return _products; }
 	protected:
 		std::vector<ProductMap*> _products;
 		std::vector<Road*> _roads;

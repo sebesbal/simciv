@@ -107,28 +107,6 @@ namespace simciv
 		b->_roads.push_back(r);
 	}
 	
-	double price(double p_sup, double v_sup, double p_con, double v_con)
-	{
-		double v = v_sup + v_con;
-		if (p_sup == max_price || p_con == 0)
-		{
-			return -1;
-		}
-		else if (v < 0.5)
-		{
-			return (p_sup + p_con) / 2;
-		}
-		else
-		{
-			double x = v_con / v - 0.5;
-			// double k = 6; // if the k is bigger, the sigmoid is "sharper"
-			double k = 4;
-			double d = tanh(k * x);
-			double alpha = (d + 1) / 2;
-			return alpha * p_con + (1 - alpha) * p_sup;
-		}
-	}
-
 	const double trans_rate = 1.0;
 
 	Area* WorldModel::get_area(int x, int y)

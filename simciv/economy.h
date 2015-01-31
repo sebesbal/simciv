@@ -47,9 +47,9 @@ namespace simciv
 		AreaProd& get_prod(Area* a) { return (*_production)[a->index]; }
 		AreaProd& get_new_prod(Area* a) { return (*_new_production)[a->index]; }
 		void add_supply(Area* area, double volume, double price);
+		void routes_to_areas(int prod_id);
 	protected:
 		void update_routes();
-		void routes_to_areas();
 		void update_prices();
 		WorldModel& _world;
 		std::vector<Producer*> _supplies;

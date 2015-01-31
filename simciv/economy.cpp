@@ -26,8 +26,12 @@ namespace simciv
 
 	void ProductMap::update()
 	{
-		update_routes();
-		routes_to_areas();
+		static int k = 0;
+		if (k % 1 == 0)
+		{
+			update_routes();
+			//routes_to_areas();
+		}
 		update_prices();
 	}
 
@@ -110,11 +114,11 @@ namespace simciv
 		delete g;
 	}
 
-	void ProductMap::routes_to_areas()
+	void ProductMap::routes_to_areas(int prod_id)
 	{
 		for (Road* r: _world.roads())
 		{
-			r->t[0] = 0;
+			r->t[prod_id] = 0;
 		}
 
 		for (Transport* route: _routes)
@@ -125,11 +129,11 @@ namespace simciv
 				Area* b = r->other(a);
 				if (a == r->a)
 				{
-					r->t[0] += route->volume;
+					r->t[prod_id] += route->volume;
 				}
 				else
 				{
-					r->t[0] -= route->volume;
+					r->t[prod_id] -= route->volume;
 				}
 				a = b;
 			}
