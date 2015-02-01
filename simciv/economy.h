@@ -17,6 +17,8 @@ namespace simciv
 
 		double m_con; // the profit of the consumer's worst deals in this area
 		double m_sup; // the profit of the suppliers's worst deals in this area
+
+		double resource; // how effective the production is
 	};
 
 	struct Producer

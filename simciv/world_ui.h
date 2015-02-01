@@ -47,12 +47,20 @@ protected:
     Rect get_rect(int x, int y);
 	void tick(float f);
 	Size _table;
+	int _show_price_vol_mode;
+	int _show_sup_con_mode;
 	bool _show_grid;
-	bool _show_price;
-	bool _show_volume;
-	bool _show_supply;
-	bool _show_demand;
+	//bool _show_price;
+	//bool _show_volume;
+	//bool _show_supply;
+	//bool _show_demand;
 	bool _show_transport;
+
+	std::vector<ui::Widget*> _cb_price_vol_mode;
+	std::vector<ui::Widget*> _cb_sup_con_mode;
+
+	void set_price_vol_mode(int i);
+	void set_sup_con_mode(int i);
 };
 
 enum ItemType

@@ -7,6 +7,7 @@
 #include "ui\UIVBox.h"
 #include "ui\UIText.h"
 #include "ui\UIButton.h"
+//#include "CC
 #include "base\ccTypes.h"
 #include <algorithm>
 #include "economy.h"
@@ -15,6 +16,7 @@ namespace simciv
 {
 
 USING_NS_CC;
+using namespace std;
 
 std::string factory_strings[4] = {
 	"factory_red.png", "factory_blue.png", "factory_green.png", "factory_yellow.png"
@@ -69,7 +71,139 @@ Layout* labelled_cb(std::string text, bool checked, CheckBox::ccCheckBoxCallback
 	return l;
 }
 
+
+
+
+Layout* combobox(const std::string* labels)
+{
+	return NULL;
+}
+
 VBox* left_menu;
+
+
+#define RBON "cocosui/Radio_button_on.png"
+#define RBOFF "cocosui/Radio_button_off.png"
+
+class RadioBox: public HBox
+{
+public:
+	RadioBox (int* data, std::vector<std::string> labels, int hh, int marginy): data(data), hh(hh), marginy(marginy)
+	{
+		int k = 0;
+		for (auto l: labels)
+		{
+			auto cb = [this, k](Ref* pSender, CheckBox::EventType type) { setSelected(k); };
+			Widget* rb;
+			if (l.substr(0, 1) == "_")
+			{
+				rb = image_radio(l.substr(1, l.length() - 1), cb);
+			}
+			else
+			{
+				rb = labelled_radio(l, cb);
+			}
+			++k;
+			addChild(rb);
+			items.push_back(rb);
+		}
+		setSelected(0);
+	}
+	void setSelected(int i)
+	{
+		int l = 0;
+		for (Widget* item: items)
+		{
+			((CheckBox*)item->getChildren().at(0))->setSelectedState(i == l++);
+		}
+		*(this->data) = i;
+	}
+
+	static RadioBox* create(int* data, std::vector<std::string> labels, int hh, int marginy)
+	{
+	    RadioBox* widget = new RadioBox(data, labels, hh, marginy);
+		if (widget && widget->init())
+		{
+			widget->autorelease();
+			widget->setSize(Size(100, hh + marginy));
+			return widget;
+		}
+		else
+		{
+			CC_SAFE_DELETE(widget);
+			return nullptr;
+		}
+	}
+	Layout* labelled_radio(std::string text, CheckBox::ccCheckBoxCallback cb)
+	{
+		auto l = HBox::create();
+		auto p = LinearLayoutParameter::create();
+		p->setGravity(LinearLayoutParameter::LinearGravity::CENTER_VERTICAL);
+
+		CheckBox* chb = CheckBox::create(RBOFF, RBOFF, RBON, RBOFF, RBON);
+		chb->setSelectedState(false);
+		chb->addEventListener(cb);
+		chb->setLayoutParameter(p);
+		l->addChild(chb);
+	
+		auto label = Text::create();
+		label->setString(text);
+		label->setFontSize(18);
+		label->setLayoutParameter(p);
+		l->addChild(label);
+		l->requestDoLayout();
+		auto height = std::max(chb->getSize().height, label->getSize().height);
+		l->setSize(Size(100, height));
+
+		LinearLayoutParameter* pp = LinearLayoutParameter::create();
+		pp->setGravity(LinearLayoutParameter::LinearGravity::TOP);
+		pp->setMargin(Margin(2, marginy, 2, 2));
+
+		l->setLayoutParameter(pp);
+
+		return l;
+	}
+	Layout* image_radio(string img, CheckBox::ccCheckBoxCallback cb)
+	{
+		auto l = HBox::create();
+		auto p = LinearLayoutParameter::create();
+		p->setGravity(LinearLayoutParameter::LinearGravity::CENTER_VERTICAL);
+
+		CheckBox* chb = CheckBox::create(RBOFF, RBOFF, RBON, RBOFF, RBON);
+		chb->setSelectedState(false);
+		chb->addEventListener(cb);
+		chb->setLayoutParameter(p);
+		l->addChild(chb);
+	
+		auto image = Widget::create();
+		auto s = Sprite::create(img);
+		s->setScale(hh / s->getContentSize().height);
+		s->setPosition(hh/2, hh/2);
+		image->addChild(s);
+		image->setLayoutParameter(p);
+		image->setSize(Size(hh, hh));
+		l->addChild(image);
+		//l->requestDoLayout();
+		// auto height = std::max(chb->getSize().height, label->getSize().height);
+		l->setSize(Size(100, hh));
+
+		LinearLayoutParameter* pp = LinearLayoutParameter::create();
+		pp->setGravity(LinearLayoutParameter::LinearGravity::TOP);
+		pp->setMargin(Margin(2, marginy, 2, 2));
+
+		l->setLayoutParameter(pp);
+
+		return l;
+	}
+	int hh;
+	int marginy;
+	vector<Widget*> items;
+	int* data;
+};
+
+#define defvec(vec, ...) \
+	static const string arr ## vec[] = { __VA_ARGS__ }; \
+	vector<string> vec (arr ## vec, arr ## vec + sizeof(arr ## vec) / sizeof(arr ## vec[0]) );
 
 void WorldUI::init_menu()
 {
@@ -90,7 +224,7 @@ void WorldUI::init_menu()
 	q->setGravity(LinearLayoutParameter::LinearGravity::LEFT);
 	//q->setMargin(Margin(2, 2, 2, 2));
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		auto hbox = HBox::create();
 		hbox->setLayoutParameter(q);
@@ -98,7 +232,7 @@ void WorldUI::init_menu()
 		auto fs = factory_strings[i];
 		auto factory_button = Button::create(fs, fs, fs);
 		factory_button->addTouchEventListener([this, i](Ref* w, Widget::TouchEventType e) {
-			_product_id = i;
+			// _product_id = i;
 			_mode = IT_FACTORY;
 		});
 		
@@ -110,7 +244,7 @@ void WorldUI::init_menu()
 		fs = mine_strings[i];
 		auto mine_button = Button::create(fs, fs, fs);
 		mine_button->addTouchEventListener([this, i](Ref* w, Widget::TouchEventType e) {
-			_product_id = i;
+			// _product_id = i;
 			_mode = IT_MINE;
 		});
 		mine_button->setSize(s);
@@ -133,49 +267,41 @@ void WorldUI::init_menu()
 	p->setMargin(Margin(2, 2, 2, 2));
 	p->setGravity(LinearLayoutParameter::LinearGravity::LEFT);
 
-	auto cb_bck = labelled_cb("Background", true, [this](Ref* pSender,CheckBox::EventType type) {
+	int hh = 30;
+	int marginy = 20;
+
+	// ==============================================================================================
+	// PRODUCT
+	defvec(vec0, "_factory_red.png", "_factory_blue.png", "_factory_green.png", "_factory_yellow.png")
+	auto rb = RadioBox::create(&_product_id, vec0, hh, marginy);
+	left_menu->addChild(rb);
+
+	// ==============================================================================================
+	// PRICE - VOL - RES
+	_show_price_vol_mode = 0;
+	defvec(vec1, "Price", "Volume", "Res.")
+	rb = RadioBox::create(&_show_price_vol_mode, vec1, hh, marginy);
+	left_menu->addChild(rb);
+
+	// ==============================================================================================
+	// SUPPLY - CONSUMPTION
+	_show_sup_con_mode = 2;
+	defvec(vec2, "Supply", "Cons.", "Both")
+	rb = RadioBox::create(&_show_sup_con_mode, vec2, hh, marginy);
+	left_menu->addChild(rb);
+
+	// ==============================================================================================
+	// BACKGROUND
+	auto cb_bck = labelled_cb("Background", false, [this](Ref* pSender,CheckBox::EventType type) {
 		_map->setVisible(type == CheckBox::EventType::SELECTED);
 	});
 	cb_bck->setLayoutParameter(p);
 	left_menu->addChild(cb_bck);
-	
-	_show_grid = false;
-	//auto cb_grid = labelled_cb("Grid", _show_grid, [this](Ref* pSender,CheckBox::EventType type) {
-	//	_show_grid = !_show_grid;
-	//});
-	//cb_grid->setLayoutParameter(p);
-	//left_menu->addChild(cb_grid);
 
-	_show_price = true;
-	auto cb_price = labelled_cb("Price", _show_price, [this](Ref* pSender,CheckBox::EventType type) {
-		_show_price = !_show_price;
-	});
-	cb_price->setLayoutParameter(p);
-	left_menu->addChild(cb_price);
-
-	_show_volume = true;
-	auto cb_volume = labelled_cb("Volume", _show_volume, [this](Ref* pSender,CheckBox::EventType type) {
-		_show_volume = !_show_volume;
-	});
-	cb_volume->setLayoutParameter(p);
-	left_menu->addChild(cb_volume);
-
-	_show_supply = false;
-	auto cb_supply = labelled_cb("Supply", _show_supply, [this](Ref* pSender,CheckBox::EventType type) {
-		_show_supply = !_show_supply;
-	});
-	cb_supply->setLayoutParameter(p);
-	left_menu->addChild(cb_supply);
-
-	_show_demand = false;
-	auto cb_demand = labelled_cb("Demand", _show_demand, [this](Ref* pSender,CheckBox::EventType type) {
-		_show_demand = !_show_demand;
-	});
-	cb_demand->setLayoutParameter(p);
-	left_menu->addChild(cb_demand);
-
+	// ==============================================================================================--
+	// TRANSPORT
 	_show_transport = true;
-	auto cb_transport = labelled_cb("Flow", _show_transport, [this](Ref* pSender,CheckBox::EventType type) {
+	auto cb_transport = labelled_cb("Routes", _show_transport, [this](Ref* pSender,CheckBox::EventType type) {
 		_show_transport = !_show_transport;
 	});
 	cb_transport->setLayoutParameter(p);
@@ -185,6 +311,10 @@ void WorldUI::init_menu()
 	left_menu->setPosition(Vec2(0, h));
 
 	this->addChild(left_menu);
+
+	//set_price_vol_mode(0);
+	//set_sup_con_mode(2);
+	_show_grid = false;
 }
 
 // on "init" you need to initialize your instance
@@ -214,7 +344,7 @@ bool WorldUI::init()
     // add the sprite as a child to this layer
     this->addChild(_map, 0, 0);
 	_map->setLocalZOrder(-1);
-
+	_map->setVisible(false);
 	_model.create_map(_table.width / cs, _table.height / cs, 4);
     
     //auto listener = EventListenerTouchAllAtOnce::create();
@@ -296,9 +426,9 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 	double min_vol = 1000;
 	double max_vol = 0;
 
-	if (_show_price)
+	if (_show_price_vol_mode == 0)
 	{
-		if (!_show_supply && !_show_demand)
+		if (_show_sup_con_mode == 2)
 		{
 			for (Area* a: _model.areas())
 			{
@@ -322,7 +452,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 				draw_rect(a->x, a->y, r, vol / d_vol);
 			}
 		}
-		else if (_show_supply)
+		else if (_show_sup_con_mode == 0)
 		{
 			for (Area* a: _model.areas())
 			{
@@ -346,7 +476,7 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 				draw_rect(a->x, a->y, r, vol / d_vol);
 			}
 		}
-		else if (_show_demand)
+		else if (_show_sup_con_mode == 1)
 		{
 			for (Area* a: _model.areas())
 			{
@@ -508,6 +638,26 @@ void WorldUI::onTouchEnded(Touch* touch, Event  *event)
 		p = _items->convertToNodeSpace(p);
 		add_item(_mode, p.x, p.y);
 	}
+}
+
+void WorldUI::set_price_vol_mode(int i)
+{
+	int k = 0;
+	for (Widget* l: _cb_price_vol_mode)
+	{
+		((CheckBox*)l->getChildren().at(0))->setSelectedState(i == k++);
+	}
+	_show_price_vol_mode = i;
+}
+
+void WorldUI::set_sup_con_mode(int i)
+{
+	int k = 0;
+	for (Widget* l: _cb_sup_con_mode)
+	{
+		((CheckBox*)l->getChildren().at(0))->setSelectedState(i == k++);
+	}
+	_show_sup_con_mode = i;
 }
 
 }

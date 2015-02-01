@@ -27,7 +27,7 @@ namespace simciv
 	void ProductMap::update()
 	{
 		static int k = 0;
-		if (k % 1 == 0)
+		if (k++ % 10 == 0)
 		{
 			update_routes();
 			//routes_to_areas();
