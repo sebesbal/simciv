@@ -22,6 +22,7 @@ namespace simciv
 		_new_production->resize(n);
 		_area_consumers.resize(n);
 		_area_supplies.resize(n);
+		generate_resources();
 	}
 
 	void ProductMap::update()
@@ -140,6 +141,15 @@ namespace simciv
 		}
 	}
 
+	void ProductMap::generate_resources()
+	{
+		for (int i = 0; i < _world.areas().size(); ++i)
+		{
+			//AreaProd& ap = (*_production)[i];
+			(*_new_production)[i].resource = (*_production)[i].resource = pow( (double)rand() / RAND_MAX, 3);
+		}
+	}
+
 	void ProductMap::update_prices()
 	{
 		for (Area* a: _world.areas())
@@ -200,6 +210,7 @@ namespace simciv
 		else
 		{
 			// producer
+			p->volume *= a.resource;
 			_supplies.push_back(p);
 			_area_supplies[area->index].push_back(p);
 		}

@@ -50,6 +50,7 @@ namespace simciv
 		AreaProd& get_new_prod(Area* a) { return (*_new_production)[a->index]; }
 		void add_supply(Area* area, double volume, double price);
 		void routes_to_areas(int prod_id);
+		void generate_resources();
 	protected:
 		void update_routes();
 		void update_prices();

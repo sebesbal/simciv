@@ -43,6 +43,7 @@ protected:
 	CustomCommand _customCommand;
     void onDraw(const Mat4 &transform, uint32_t flags);
 	void draw_rect(int x, int y, double rate, double alpha);
+	void draw_rect_green(int x, int y, double rate, double alpha);
 	void draw_vec(Vec2 a, Vec2 v);
     Rect get_rect(int x, int y);
 	void tick(float f);

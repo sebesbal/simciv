@@ -501,25 +501,14 @@ void WorldUI::onDraw(const Mat4 &transform, uint32_t flags)
 			}
 		}
 	}
-
-	//if (_show_supply)
-	//{
-	//	for (Area* a: _model.areas())
-	//	{
-	//		auto& p = _model.get_prod(a, 0);
-	//		double v = p.v;
-	//		min_v = std::min(min_v, v);
-	//		max_v = std::max(max_v, v);
-	//	}
-	//	double d = max_v - min_v;
-
-	//	for (Area* a: _model.areas())
-	//	{
-	//		double v = _model.get_prod(a, 0).v;
-	//		double r = d == 0 ? 0.5 : (v - min_v) / d;
-	//		draw_rect(a->x, a->y, r, 0.5);
-	//	}
-	//}
+	else if (_show_price_vol_mode == 2)
+	{
+		for (Area* a: _model.areas())
+		{
+			auto& p = _model.get_prod(a, _product_id);
+			draw_rect_green(a->x, a->y, p.resource, 1);
+		}
+	}
 
 	if (_show_transport)
 	{
@@ -543,6 +532,12 @@ void WorldUI::draw_rect(int x, int y, double rate, double alpha)
 	Rect r = get_rect(x, y);
 	
 	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(1 - rate, rate, 0, alpha));
+}
+
+void WorldUI::draw_rect_green(int x, int y, double rate, double alpha)
+{
+	Rect r = get_rect(x, y);
+	DrawPrimitives::drawSolidRect( Vec2(r.getMinX(), r.getMinY()), Vec2(r.getMaxX(), r.getMaxY()), Color4F(0, rate, 0, alpha));
 }
 
 void WorldUI::draw_vec(Vec2 a, Vec2 v)
