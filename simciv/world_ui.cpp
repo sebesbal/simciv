@@ -67,7 +67,16 @@ Layout* labelled_cb(std::string text, bool checked, CheckBox::ccCheckBoxCallback
 	l->requestDoLayout();
 	auto height = std::max(chb->getSize().height, label->getSize().height);
 	l->setSize(Size(100, height));
-
+	label->setTouchEnabled(true);
+	label->addTouchEventListener([chb, cb](Ref*,Widget::TouchEventType type)
+	{ 
+		if (type == Widget::TouchEventType::ENDED)
+		{
+			chb->setSelectedState(!chb->getSelectedState());
+			cb(NULL, chb->getSelectedState() ? CheckBox::EventType::SELECTED : CheckBox::EventType::UNSELECTED); 
+		}
+	});
+	
 	return l;
 }
 
@@ -150,6 +159,16 @@ public:
 		label->setString(text);
 		label->setFontSize(18);
 		label->setLayoutParameter(p);
+		label->setTouchEnabled(true);
+		label->addTouchEventListener([chb, cb](Ref*,Widget::TouchEventType type)
+		{ 
+			if (type == Widget::TouchEventType::ENDED)
+			{
+				chb->setSelectedState(true);
+				cb(NULL, CheckBox::EventType::SELECTED); 
+			}
+		});
+
 		l->addChild(label);
 		l->requestDoLayout();
 		auto height = std::max(chb->getSize().height, label->getSize().height);
@@ -182,6 +201,15 @@ public:
 		image->addChild(s);
 		image->setLayoutParameter(p);
 		image->setSize(Size(hh, hh));
+		image->setTouchEnabled(true);
+		image->addTouchEventListener([chb, cb](Ref*,Widget::TouchEventType type)
+		{ 
+			if (type == Widget::TouchEventType::ENDED)
+			{
+				chb->setSelectedState(true);
+				cb(NULL, CheckBox::EventType::SELECTED); 
+			}
+		});
 		l->addChild(image);
 		//l->requestDoLayout();
 		// auto height = std::max(chb->getSize().height, label->getSize().height);
@@ -612,11 +640,20 @@ void WorldUI::menuCloseCallback(Ref* sender)
 #endif
 }
 
+bool is_map_point(cocos2d::Vec2& p)
+{
+	//return p.y < 557 || p.x > 366;
+	return p.x > 370 || p.y > 222;
+}
+
 void WorldUI::onTouchMoved(Touch* touch, Event  *event)
 {
-    auto diff = touch->getDelta();
-	_map->setPosition(_map->getPosition() + diff);
-	_items->setPosition(_items->getPosition() + diff);
+	if (is_map_point(touch->getLocationInView()))
+	{
+		auto diff = touch->getDelta();
+		_map->setPosition(_map->getPosition() + diff);
+		_items->setPosition(_items->getPosition() + diff);
+	}
 }
 
 bool WorldUI::onTouchBegan(Touch* touch, Event  *event)
@@ -628,7 +665,7 @@ void WorldUI::onTouchEnded(Touch* touch, Event  *event)
 {
 	auto s = touch->getStartLocation();
 	auto p = touch->getLocation();
-	if ((p - s).length() < 10)
+	if (is_map_point(touch->getLocationInView()) && (p - s).length() < 10)
 	{
 		p = _items->convertToNodeSpace(p);
 		add_item(_mode, p.x, p.y);
