@@ -10,6 +10,8 @@ namespace simciv
 	class Route;
 	const double max_price = 100000000000;
 
+	typedef std::vector<double> t_prods;
+
 	struct Area
 	{
 		Area(int index, int pc);
@@ -25,7 +27,7 @@ namespace simciv
 		Road(int pc, double t_price);
 		Area* a;
 		Area* b;
-		std::vector<double> t; // transport
+		t_prods t; // transport
 		double t_price;
 		Area* other(Area* a) { return a == this->a ? b : this->a; }
 	};
@@ -54,15 +56,16 @@ namespace simciv
 		double trans_price;
 	};
 
+	/// The map. Graph of areas and roads.
 	class WorldModel
 	{
 	public:
 		WorldModel();
-		void create_map(int width, int height, int prod_count);
+		virtual void create_map(int width, int height, int prod_count);
 		const std::vector<Road*>& roads() { return _roads; }
 		const std::vector<Area*>& areas() { return _areas; }
 		virtual void end_turn();
-		virtual void add_supply(Area* area, int prod_id, double volume, double price);
+		virtual void add_prod(Area* area, int prod_id, double volume, double price);
 		Area* get_area(int x, int y);
 		int width() { return _width; }
 		int height() { return _height; }

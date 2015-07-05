@@ -219,8 +219,8 @@ namespace simciv
 		return route;
 	}
 
-	void WorldModel::add_supply(Area* area, int prod_id, double volume, double price)
+	void WorldModel::add_prod(Area* area, int prod_id, double volume, double price)
 	{
-		_products[prod_id]->add_supply(area, volume, price);
+		_products[prod_id]->add_prod(area, volume, price);
 	}
 }

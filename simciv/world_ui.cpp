@@ -602,7 +602,7 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 			mine1->setPosition(x, y);
 			mine1->setScale(0.05);
 			_items->addChild(mine1);
-			_model.add_supply(a, _product_id, 100, 10);
+			_model.add_prod(a, _product_id, 100, 10);
 		}
 		break;
 	case simciv::IT_FACTORY:
@@ -611,7 +611,7 @@ Item* WorldUI::add_item(ItemType type, int x, int y)
 			factory1->setPosition(x, y);
 			factory1->setScale(0.2);
 			_items->addChild(factory1);
-			_model.add_supply(a, _product_id, -100, 100);
+			_model.add_prod(a, _product_id, -100, 100);
 		}
 		break;
 	default:

@@ -4,6 +4,7 @@
 
 namespace simciv
 {
+	/// Represents one single product's volumes and prices on an area
 	struct AreaProd
 	{
 		AreaProd();
@@ -41,6 +42,7 @@ namespace simciv
 		double profit;
 	};
 
+	/// Represents one single product's volumes and prices on the map
 	class ProductMap
 	{
 	public:
@@ -48,10 +50,11 @@ namespace simciv
 		void update();
 		AreaProd& get_prod(Area* a) { return (*_production)[a->index]; }
 		AreaProd& get_new_prod(Area* a) { return (*_new_production)[a->index]; }
-		void add_supply(Area* area, double volume, double price);
+		void add_prod(Area* area, double volume, double price);
 		void routes_to_areas(int prod_id);
 		void generate_resources();
 	protected:
+		bool unique_mode;
 		void update_routes();
 		void update_prices();
 		WorldModel& _world;

@@ -15,14 +15,14 @@ namespace simciv
 
 	}
 
-	ProductMap::ProductMap(WorldModel& world): _world(world), _production(new std::vector<AreaProd>()), _new_production(new std::vector<AreaProd>())
+	ProductMap::ProductMap(WorldModel& world): _world(world), _production(new std::vector<AreaProd>()), _new_production(new std::vector<AreaProd>()), unique_mode(true)
 	{
 		int n = world.areas().size();
 		_production->resize(n);
 		_new_production->resize(n);
 		_area_consumers.resize(n);
 		_area_supplies.resize(n);
-		generate_resources();
+		// generate_resources();
 	}
 
 	void ProductMap::update()
@@ -194,23 +194,35 @@ namespace simciv
 		 std::swap(_production, _new_production);
 	}
 
-	void ProductMap::add_supply(Area* area, double volume, double price)
+	void ProductMap::add_prod(Area* area, double volume, double price)
 	{
+		bool consumer = volume < 0;
+		auto& v = consumer ? _consumers : _supplies;
 		AreaProd& a = get_prod(area);
-		Producer* p = new Producer();
-		p->price = price;
-		p->volume = volume;
-		p->area = area;
-		if (volume < 0)
+		auto it = std::find_if(v.begin(), v.end(), [area](Producer* p) { return p->area == area; });
+		Producer* p;
+
+		if (unique_mode && it != v.end())
 		{
-			// consumer
+			p = *it;
+			p->volume += volume;
+		}
+		else
+		{
+			p = new Producer();
+			p->price = price;
+			p->volume = volume;
+			p->area = area;
+		}
+
+		if (consumer)
+		{
 			_consumers.push_back(p);
 			_area_consumers[area->index].push_back(p);
 		}
 		else
 		{
-			// producer
-			p->volume *= a.resource;
+			// p->volume *= a.resource;
 			_supplies.push_back(p);
 			_area_supplies[area->index].push_back(p);
 		}

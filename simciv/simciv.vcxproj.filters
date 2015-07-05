@@ -51,6 +51,9 @@
     <ClInclude Include="economy.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="animals.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="economy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="animals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

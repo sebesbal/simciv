@@ -85,6 +85,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="animals.h" />
     <ClInclude Include="AppDelegate.h" />
     <ClInclude Include="AppMacros.h" />
     <ClInclude Include="common.h" />
@@ -98,6 +99,7 @@
     <ClInclude Include="world_ui.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="animals.cpp" />
     <ClCompile Include="AppDelegate.cpp" />
     <ClCompile Include="economy.cpp" />
     <ClCompile Include="main.cpp" />
