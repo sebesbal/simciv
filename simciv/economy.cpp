@@ -1,6 +1,7 @@
 
 #include "economy.h"
 #include <algorithm>
+#include <assert.h>
 
 namespace simciv
 {
@@ -15,7 +16,11 @@ namespace simciv
 
 	}
 
-	ProductMap::ProductMap(WorldModel& world): _world(world), _production(new std::vector<AreaProd>()), _new_production(new std::vector<AreaProd>()), unique_mode(true)
+	ProductMap::ProductMap(WorldModel& world): 
+		_world(world), 
+		_production(new std::vector<AreaProd>()), 
+		_new_production(new std::vector<AreaProd>()), 
+		unique_mode(true)
 	{
 		int n = world.areas().size();
 		_production->resize(n);
@@ -213,18 +218,50 @@ namespace simciv
 			p->price = price;
 			p->volume = volume;
 			p->area = area;
-		}
 
-		if (consumer)
+			if (consumer)
+			{
+				_consumers.push_back(p);
+				_area_consumers[area->index].push_back(p);
+			}
+			else
+			{
+				// p->volume *= a.resource;
+				_supplies.push_back(p);
+				_area_supplies[area->index].push_back(p);
+			}
+		}
+	}
+
+	void ProductMap::remove_prod(Area* area, double volume, double price)
+	{
+		assert(unique_mode);
+		bool consumer = volume < 0;
+		auto& v = consumer ? _consumers : _supplies;
+		AreaProd& a = get_prod(area);
+		auto it = std::find_if(v.begin(), v.end(), [area](Producer* p) { return p->area == area; });
+
+		if (it == v.end())
 		{
-			_consumers.push_back(p);
-			_area_consumers[area->index].push_back(p);
+			throw "area is empty";
 		}
 		else
 		{
-			// p->volume *= a.resource;
-			_supplies.push_back(p);
-			_area_supplies[area->index].push_back(p);
+			(*it)->volume -= volume;
+		}
+
+		if ((*it)->volume == 0)
+		{
+			if (consumer)
+			{
+				_consumers.erase(it);
+				_area_consumers[area->index].erase(it);
+			}
+			else
+			{
+				_supplies.erase(it);
+				_area_supplies[area->index].erase(it);
+			}
 		}
 	}
 }

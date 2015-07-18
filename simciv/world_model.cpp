@@ -223,4 +223,9 @@ namespace simciv
 	{
 		_products[prod_id]->add_prod(area, volume, price);
 	}
+
+	void WorldModel::remove_prod(Area* area, int prod_id, double volume, double price)
+	{
+		_products[prod_id]->remove_prod(area, volume, price);
+	}
 }

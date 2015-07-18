@@ -26,9 +26,12 @@ namespace simciv
 		void generate_species();
 		void generate_animals();
 	protected:
+		Animal* create_animal(Area* a, Species& species);
+		void move_animal(Animal* ani, Area* new_area);
 		void add_producers(Area* a, Species& species);
 		void remove_producers(Area* a, Species& species);
 		std::vector<Species> species;
+		std::vector<Animal*> animals;
 	};
 
 }

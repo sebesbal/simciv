@@ -66,6 +66,7 @@ namespace simciv
 		const std::vector<Area*>& areas() { return _areas; }
 		virtual void end_turn();
 		virtual void add_prod(Area* area, int prod_id, double volume, double price);
+		virtual void remove_prod(Area* area, int prod_id, double volume, double price);
 		Area* get_area(int x, int y);
 		int width() { return _width; }
 		int height() { return _height; }
