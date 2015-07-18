@@ -6,13 +6,29 @@ namespace simciv
 USING_NS_CC;
 using namespace std;
 
-bool MapView::init(WorldModel* model)
+
+MapView* MapView::create(WorldModel* model)
+{
+	MapView* result = new MapView();
+	result->_model = model;
+	if (result && result->init())
+	{
+		result->autorelease();
+		return result;
+	}
+	else
+	{
+		CC_SAFE_DELETE(result);
+		return nullptr;
+	}
+}
+
+bool MapView::init()
 {
 	if ( !Layer::init() )
     {
         return false;
     }
-	_model = model;
 	auto visibleSize = Director::getInstance()->getVisibleSize();
     _map = Sprite::create("map.png");
 	_table = _map->getContentSize();

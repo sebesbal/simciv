@@ -25,7 +25,8 @@ std::string mine_strings[4] = {
 ProdView* ProdView::create(WorldModel* model)
 {
 	ProdView* result = new ProdView();
-	if (result && result->init(model))
+	result->_model = model;
+	if (result && result->init())
 	{
 		result->autorelease();
 		return result;
@@ -37,9 +38,9 @@ ProdView* ProdView::create(WorldModel* model)
 	}
 }
 
-bool ProdView::init(WorldModel* model)
+bool ProdView::init()
 {
-	if (!MapView::init(model))
+	if (!MapView::init())
 	{
 		return false;
 	}

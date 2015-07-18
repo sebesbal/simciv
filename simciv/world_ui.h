@@ -24,8 +24,8 @@ class Item;
 class MapView : public cocos2d::Layer
 {
 public:
-	virtual bool init(WorldModel* model);
-	void set_model(WorldModel* model) { _model = model; }
+	static MapView* create(WorldModel* model);
+	virtual bool init() override;
 	virtual void draw(Renderer *renderer, const Mat4 &transform, uint32_t flags) override;
 	CustomCommand _customCommand;
     virtual void onDraw(const Mat4 &transform, uint32_t flags);
@@ -50,7 +50,7 @@ class ProdView : public MapView
 {
 public:
 	static ProdView* create(WorldModel* model);
-	virtual bool init(WorldModel* model) override;
+	virtual bool init() override;
 	void onTouchEnded(Touch* touch, Event  *event) override;
 	void onTouchMoved(Touch* touch, Event  *event) override;
 protected:
