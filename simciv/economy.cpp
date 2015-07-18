@@ -20,7 +20,8 @@ namespace simciv
 		_world(world), 
 		_production(new std::vector<AreaProd>()), 
 		_new_production(new std::vector<AreaProd>()), 
-		unique_mode(true)
+		unique_mode(true),
+		update_count(0)
 	{
 		int n = world.areas().size();
 		_production->resize(n);
@@ -32,11 +33,9 @@ namespace simciv
 
 	void ProductMap::update()
 	{
-		static int k = 0;
-		if (k++ % 10 == 0)
+		if (update_count++ % 10 == 0)
 		{
 			update_routes();
-			//routes_to_areas();
 		}
 		update_prices();
 	}

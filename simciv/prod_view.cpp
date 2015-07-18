@@ -17,9 +17,6 @@ std::string mine_strings[4] = {
 	"mine_red.png", "mine_blue.png", "mine_green.png", "mine_yellow.png"
 };
 
-#define defvec(vec, ...) \
-	static const string arr ## vec[] = { __VA_ARGS__ }; \
-	vector<string> vec (arr ## vec, arr ## vec + sizeof(arr ## vec) / sizeof(arr ## vec[0]) );
 
 
 ProdView* ProdView::create(WorldModel* model)
@@ -48,13 +45,6 @@ bool ProdView::init()
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	auto w = visibleSize.width;
 	auto h = visibleSize.height;
-
-	//auto listener = EventListenerTouchOneByOne::create();
-	//listener->onTouchMoved = CC_CALLBACK_2(ProdView::onTouchMoved, this);
-	//listener->onTouchEnded = CC_CALLBACK_2(ProdView::onTouchEnded, this);
- //   _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-
-	
 
 	Vec2 topLeft = Vec2(visibleSize.width / 2.0f, visibleSize.height / 2.0f);
 
@@ -101,8 +91,6 @@ bool ProdView::init()
 	}
 
 	this->addChild(right_menu);
-	//right_menu->setAnchorPoint(Vec2(1, 1)); // doesn't have effect
-	//right_menu->setPosition(Vec2(w - 13, h));
 	right_menu->setPosition(Vec2(w - 50, h));
 
 	// left menu
@@ -153,7 +141,7 @@ bool ProdView::init()
 	left_menu->addChild(cb_transport);
 
 	left_menu->setAnchorPoint(Vec2(0, 1));
-	left_menu->setPosition(Vec2(0, h));
+	left_menu->setPosition(Vec2(0, h - 50));
 
 	this->addChild(left_menu);
 

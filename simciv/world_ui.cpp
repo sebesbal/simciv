@@ -36,9 +36,30 @@ Scene* WorldUI::scene()
 // on "init" you need to initialize your instance
 bool WorldUI::init()
 {
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+	auto w = visibleSize.width;
+	auto h = visibleSize.height;
+
 	this->schedule(schedule_selector(WorldUI::tick), 0.05, kRepeatForever, 0);
-	ProdView* prodView = (ProdView*)ProdView::create(&_model);
-	this->addChild(prodView);
+
+	int hh = 30;
+	int marginy = 20;
+	view_mode = 0;
+	defvec(vec9, "Prods", "Animals");
+	auto rb = RadioBox::create(&view_mode, vec9, hh, marginy);
+	rb->setZOrder(10);
+
+	//auto left_menu = ui::VBox::create();
+	rb->setAnchorPoint(Vec2(0, 1));
+	rb->setPosition(Vec2(0, h));
+	//left_menu->setSize(Size(100, 100));
+	//left_menu->setContentSize(Size(100, 100));
+	this->addChild(rb);
+	//this->addChild(left_menu);
+	//this->addChild(ui::Text::create("lofusz", "arial", 12));
+
+	this->addChild(ProdView::create(&_model));
+
     return true;
 }
 

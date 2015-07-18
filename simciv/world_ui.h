@@ -20,6 +20,10 @@ USING_NS_CC;
 enum ItemType;
 class Item;
 
+#define defvec(vec, ...) \
+	static const string arr ## vec[] = { __VA_ARGS__ }; \
+	vector<string> vec (arr ## vec, arr ## vec + sizeof(arr ## vec) / sizeof(arr ## vec[0]) );
+
 /// draw tiles, map background, routes
 class MapView : public cocos2d::Layer
 {
@@ -114,7 +118,6 @@ class WorldUI : public cocos2d::Layer
 public:
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init() override;
-	void init_menu();  
 
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::Scene* scene();
@@ -125,6 +128,7 @@ public:
     // implement the "static node()" method manually
     CREATE_FUNC(WorldUI);
 protected:
+	int view_mode;
 	WorldModel _model;
 	void tick(float f);
 };

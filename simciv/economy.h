@@ -55,6 +55,7 @@ namespace simciv
 		void routes_to_areas(int prod_id);
 		void generate_resources();
 	protected:
+		int update_count;
 		bool unique_mode;
 		void update_routes();
 		void update_prices();
