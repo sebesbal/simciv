@@ -128,7 +128,7 @@ namespace simciv
 			for (ProductMap* product: _products)
 			{
 				product->update();
-			} 
+			}
 		}
 	}
 

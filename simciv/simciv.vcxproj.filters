@@ -80,5 +80,14 @@
     <ClCompile Include="animals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="map_view.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prod_view.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="controls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
