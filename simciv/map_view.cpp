@@ -41,7 +41,7 @@ bool MapView::init()
     this->addChild(_map, 0, 0);
 	_map->setLocalZOrder(-1);
 	_map->setVisible(false);
-	_model->create_map(_table.width / cs, _table.height / cs, 4);
+	//_model->create_map(_table.width / cs, _table.height / cs, 4);
 
 	auto listener = EventListenerTouchOneByOne::create();
 	listener->onTouchBegan = CC_CALLBACK_2(MapView::onTouchBegan, this);

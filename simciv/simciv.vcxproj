@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animals.cpp" />
+    <ClCompile Include="animal_view.cpp" />
     <ClCompile Include="AppDelegate.cpp" />
     <ClCompile Include="controls.cpp" />
     <ClCompile Include="economy.cpp" />

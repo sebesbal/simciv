@@ -77,9 +77,20 @@ protected:
 	void set_sup_con_mode(int i);
 };
 
-class AnimalView
+
+class AnimalView : public MapView
 {
+public:
+	static AnimalView* create(WorldModel* model);
+	virtual bool init() override;
+	void onTouchEnded(Touch* touch, Event  *event) override;
+	void onTouchMoved(Touch* touch, Event  *event) override;
+protected:
+	bool is_map_point(cocos2d::Vec2& p);
+	virtual void onDraw(const Mat4 &transform, uint32_t flags) override;
+	ui::VBox* left_menu;
 };
+
 
 enum ItemType
 {
@@ -128,7 +139,8 @@ public:
     // implement the "static node()" method manually
     CREATE_FUNC(WorldUI);
 protected:
-	int view_mode;
+	int view_mode, new_view_mode;
+	std::vector<Node*> views;
 	WorldModel _model;
 	void tick(float f);
 };

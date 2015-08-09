@@ -45,8 +45,9 @@ bool WorldUI::init()
 	int hh = 30;
 	int marginy = 20;
 	view_mode = 0;
+	new_view_mode = 0;
 	defvec(vec9, "Prods", "Animals");
-	auto rb = RadioBox::create(&view_mode, vec9, hh, marginy);
+	auto rb = RadioBox::create(&new_view_mode, vec9, hh, marginy);
 	rb->setZOrder(10);
 
 	//auto left_menu = ui::VBox::create();
@@ -58,13 +59,33 @@ bool WorldUI::init()
 	//this->addChild(left_menu);
 	//this->addChild(ui::Text::create("lofusz", "arial", 12));
 
-	this->addChild(ProdView::create(&_model));
+	_model.create_map(30, 20, 4);
+
+	Node* v = ProdView::create(&_model);
+	v->setVisible(true);
+	views.push_back(v);
+	this->addChild(v);
+
+	v = AnimalView::create(&_model);
+	v->setVisible(false);
+	views.push_back(v);
+	this->addChild(v);
 
     return true;
 }
 
 void WorldUI::tick(float f)
 {
+	if (view_mode != new_view_mode)
+	{
+		auto old_view = views[view_mode];
+		old_view->setVisible(false);
+
+		view_mode = new_view_mode;
+		auto new_view = views[view_mode];
+		new_view->setVisible(true);
+	}
+
 	_model.end_turn();
 }
 
